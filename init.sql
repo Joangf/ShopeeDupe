@@ -21,7 +21,7 @@ CREATE TABLE `Customer` (
 
 CREATE TABLE `Seller` (
   `SellerID` int PRIMARY KEY, -- Tự có --
-  `Type` nvarchar(50) NOT NULL COMMENT 'e.g., Personal, Business' -- Tự có--
+  `Type` nvarchar(50) NOT NULL COMMENT 'e.g., Personal, Business', -- Tự có--
   `BusinessAddress` nvarchar(255),
   `BusinessName` nvarchar(255) -- 'Thêm sau/ Tự có' --
 );
