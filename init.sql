@@ -10,7 +10,7 @@ CREATE TABLE `User` (
   `Email` varchar(255) UNIQUE NOT NULL,
   `PhoneNumber` varchar(20) UNIQUE,
   `Address` nvarchar(255),
-  `PasswordHash` varchar(55) COMMENT 'Represents the hashed password for security'
+  `PasswordHash` varchar(255) COMMENT 'Represents the hashed password for security'
 );
 
 CREATE TABLE `Customer` (
