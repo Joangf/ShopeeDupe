@@ -1,11 +1,11 @@
 CREATE TABLE `User` (
   `UserID` int PRIMARY KEY AUTO_INCREMENT,  -- Tự có --
   `FullName` nvarchar(255),
-  `Gender` nvarchar(10),
+  `Gender` nvarchar(10) CHECK (Gender IN ('Male', 'Female')),
   `DateOfBirth` date,
   `NationalID` varchar(20) UNIQUE,
   `RegistrationDate` datetime DEFAULT (now()), -- Tự có --
-  `AccountStatus` varchar(50), -- Tự có --
+  `AccountStatus` varchar(50) DEFAULT 'Active', -- Tự có --
   `LastLogin` datetime, -- Tự có --
   `Email` varchar(255) UNIQUE NOT NULL,
   `PhoneNumber` varchar(20) UNIQUE,
@@ -76,17 +76,17 @@ CREATE TABLE `PackageItem` (
 );
 
 CREATE TABLE `Product` (
-  `SellerID` int, -- Tự có --
-  `ProductID` int PRIMARY KEY, -- Tự có --
-  `VoucherID` int, -- Tự có --
+  `SellerID` int,
+  `ProductID` int PRIMARY KEY AUTO_INCREMENT, -- Tự có --
+  `VoucherID` int DEFAULT NULL, -- Thêm sau --
   `Name` nvarchar(255) NOT NULL,
   `Barcode` varchar(100) UNIQUE,
   `BrandName` nvarchar(100),
   `Status` varchar(50) NOT NULL DEFAULT 'Active' COMMENT 'e.g., Active, Inactive, Discontinued', -- Tự có --
   `Description` text,
   `Price` int,
-  `DiscountPrice` int, -- COMMENT 'Thêm sau' --,
-  `ApprovalInfo` nvarchar(255), -- COMMENT 'Thêm sau' --,
+  `DiscountPrice` int DEFAULT NULL, -- COMMENT 'Thêm sau' --,
+  `ApprovalInfo` nvarchar(255) DEFAULT NULL, -- COMMENT 'Thêm sau' --,
   `StockQuantity` int
 );
 

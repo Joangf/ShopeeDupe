@@ -48,3 +48,51 @@ BEGIN
 END //
 
 DELIMITER ;
+
+
+DELIMITER //
+
+-- Thủ tục thêm một sản phẩm mới
+CREATE PROCEDURE sp_AddNewProduct (
+    IN p_SellerID INT,  -- Mã nguời bán khi gọi hàm này ở backend
+    IN p_Name NVARCHAR(255), -- Tên sản phẩm
+    IN p_Barcode VARCHAR(100), -- Mã vạch sản phẩm (chỉ được chứa số)
+    IN p_BrandName NVARCHAR(100), -- Tên thương hiệu
+    IN p_Description TEXT,  -- Mô tả sản phẩm
+    IN p_Price INT, -- Giá sản phẩm (không được giá âm)
+    IN p_StockQuantity INT  -- (Số lượng tồn kho (không được âm hay không có gì))
+)
+BEGIN
+    INSERT INTO Product (SellerID, Name, Barcode, BrandName, Description, Price, StockQuantity)
+    VALUES (p_SellerID, p_Name, p_Barcode, p_BrandName, p_Description, p_Price, p_StockQuantity);
+END //
+DELIMITER //
+
+DELIMITER //
+
+CREATE TRIGGER trg_Product_BeforeInsert
+BEFORE INSERT ON Product
+FOR EACH ROW
+BEGIN
+    -- Kiểm tra giá không âm
+    IF NEW.Price < 0 THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'Price cannot be negative';
+    END IF;
+
+    -- Kiểm tra stock > 0
+    IF NEW.StockQuantity <= 0 THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'StockQuantity must be greater than 0';
+    END IF;
+
+    -- Kiểm tra barcode chỉ chứa số (NULL thì bỏ qua)
+    IF NEW.Barcode IS NOT NULL AND NEW.Barcode REGEXP '[^0-9]' THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'Barcode must contain only digits';
+    END IF;
+END;
+//
+
+DELIMITER ;
+
