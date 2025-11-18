@@ -15,7 +15,7 @@ CREATE TABLE `User` (
 
 CREATE TABLE `Customer` (
   `CustomerID` int PRIMARY KEY, -- Tự có --
-  `Type` nvarchar(255) --COMMENT 'Tự có'--,
+  `Type` nvarchar(255), --COMMENT 'Tự có'--,
   `Behaviour` Text -- COMMENT 'Thêm sau' --
 );
 
@@ -126,12 +126,14 @@ CREATE TABLE `Voucher` (
   `UsageCount` int DEFAULT 0, -- Tự có --
   `TotalQuantity` int,
   `DiscountValue` int,
-  `Description` text
+  `Description` text,
+  `RemainingQuantity` int DEFAULT 0
 );
 
 CREATE TABLE `UseVoucher` (
   `VoucherID` int,  -- Tự có --
-  `CustomerID` int -- Tự có --
+  `CustomerID` int, -- Tự có --
+  `UsedDate` datetime
 );
 
 CREATE TABLE `Shipment` (
