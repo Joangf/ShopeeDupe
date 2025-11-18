@@ -20,7 +20,7 @@ CREATE TABLE `User` (
 CREATE TABLE `Customer` (
   `CustomerID` int PRIMARY KEY, -- Tự có --
   `Type` nvarchar(255), -- COMMENT 'Tự có'--
-  `Behaviour` Text -- COMMENT 'Thêm sau' --
+  `Behaviour` Text DEFAULT NULL -- COMMENT 'Thêm sau' --
 );
 
 CREATE TABLE `Seller` (
