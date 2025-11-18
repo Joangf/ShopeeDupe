@@ -1,12 +1,12 @@
 CREATE TABLE `User` (
-  `UserID` int PRIMARY KEY AUTO_INCREMENT,
+  `UserID` int PRIMARY KEY AUTO_INCREMENT,  -- Tự có --
   `FullName` nvarchar(255),
   `Gender` nvarchar(10),
   `DateOfBirth` date,
   `NationalID` varchar(20) UNIQUE,
-  `RegistrationDate` datetime DEFAULT (now()),
-  `AccountStatus` varchar(50),
-  `LastLogin` datetime,
+  `RegistrationDate` datetime DEFAULT (now()), -- Tự có --
+  `AccountStatus` varchar(50), -- Tự có --
+  `LastLogin` datetime, -- Tự có --
   `Email` varchar(255) UNIQUE NOT NULL,
   `PhoneNumber` varchar(20) UNIQUE,
   `Address` nvarchar(255),
@@ -14,39 +14,39 @@ CREATE TABLE `User` (
 );
 
 CREATE TABLE `Customer` (
-  `CustomerID` int PRIMARY KEY,
-  `Type` nvarchar(255),
-  `Behaviour` Text
+  `CustomerID` int PRIMARY KEY, -- Tự có --
+  `Type` nvarchar(255) --COMMENT 'Tự có'--,
+  `Behaviour` Text -- COMMENT 'Thêm sau' --
 );
 
 CREATE TABLE `Seller` (
-  `SellerID` int PRIMARY KEY,
-  `Type` nvarchar(50) NOT NULL COMMENT 'e.g., Personal, Business',
+  `SellerID` int PRIMARY KEY, -- Tự có --
+  `Type` nvarchar(50) NOT NULL COMMENT 'e.g., Personal, Business', -- Tự có--
   `BusinessAddress` nvarchar(255),
-  `BusinessName` nvarchar(255)
+  `BusinessName` nvarchar(255) -- 'Thêm sau/ Tự có' --
 );
 
 CREATE TABLE `Admin` (
-  `AdminID` int PRIMARY KEY,
+  `AdminID` int PRIMARY KEY,  -- Tự có --
   `Role` nvarchar(255),
-  `InternalNotes` text
+  `InternalNotes` text  -- 'Thêm sau' --
 );
 
 CREATE TABLE `Shipper` (
-  `ShipperID` int PRIMARY KEY,
+  `ShipperID` int PRIMARY KEY, -- Tự có --
   `BusinessLicenseNumber` varchar(100) UNIQUE,
   `ProfilePictureURL` varchar(255),
-  `ActivityStatus` varchar(50) DEFAULT 'Offline' COMMENT 'e.g., Offline, Available, On Delivery',
-  `InternalNotes` text,
+  `ActivityStatus` varchar(50) DEFAULT 'Offline' COMMENT 'e.g., Offline, Available, On Delivery', -- Tự có --
+  `InternalNotes` text, -- 'Thêm sau'--
   `CarrierID` int
 );
 
 CREATE TABLE `Order` (
-  `OrderID` int PRIMARY KEY,
-  `CustomerID` int NOT NULL,
-  `OrderDate` datetime NOT NULL DEFAULT (now()),
-  `Status` varchar(50) NOT NULL DEFAULT 'Pending',
-  `TotalAmount` decimal(10,2) NOT NULL,
+  `OrderID` int PRIMARY KEY, -- Tự có --
+  `CustomerID` int NOT NULL, -- Tự có --
+  `OrderDate` datetime NOT NULL DEFAULT (now()), -- Tự có --
+  `Status` varchar(50) NOT NULL DEFAULT 'Pending', -- Tự có --
+  `TotalAmount` decimal(10,2) NOT NULL, -- Tự có --
   `ShippingAddress` nvarchar(255) NOT NULL,
   `TrackingNumber` varchar(100),
   `PaymentMethod` nvarchar(50),
@@ -54,163 +54,161 @@ CREATE TABLE `Order` (
 );
 
 CREATE TABLE `Package` (
-  `OrderID` int,
-  `PackageID` int PRIMARY KEY,
-  `WarehouseID` int,
-  `PackagedAt` datetime,
-  `Status` varchar(50),
+  `OrderID` int,  -- Tự có --
+  `PackageID` int PRIMARY KEY, -- Tự có --
+  `WarehouseID` int, -- Tự có --
+  `PackagedAt` datetime, -- Tự có --
+  `Status` varchar(50), -- Tự có --
   `Quantity` int
 );
 
 CREATE TABLE `PackageShipment` (
-  `ShipmentID` int,
-  `PackageID` int
+  `ShipmentID` int, -- Tự có --
+  `PackageID` int -- Tự có --
 );
 
 CREATE TABLE `PackageItem` (
-  `ProductID` int,
-  `PackageID` int,
-  `PackageItemID` int,
+  `ProductID` int, -- Tự có --
+  `PackageID` int, -- Tự có --
+  `PackageItemID` int, -- Tự có --
   `Quantity` int,
-  PRIMARY KEY (`PackageItemID`, `ProductID`)
+  PRIMARY KEY (`PackageItemID`, `ProductID`) -- Tự có --
 );
 
 CREATE TABLE `Product` (
-  `SellerID` int,
-  `ProductID` int PRIMARY KEY,
-  `VoucherID` int,
+  `SellerID` int, -- Tự có --
+  `ProductID` int PRIMARY KEY, -- Tự có --
+  `VoucherID` int, -- Tự có --
   `Name` nvarchar(255) NOT NULL,
   `Barcode` varchar(100) UNIQUE,
   `BrandName` nvarchar(100),
-  `Status` varchar(50) NOT NULL DEFAULT 'Active' COMMENT 'e.g., Active, Inactive, Discontinued',
+  `Status` varchar(50) NOT NULL DEFAULT 'Active' COMMENT 'e.g., Active, Inactive, Discontinued', -- Tự có --
   `Description` text,
   `Price` int,
-  `DiscountPrice` int,
-  `ApprovalInfo` nvarchar(255),
+  `DiscountPrice` int, -- COMMENT 'Thêm sau' --,
+  `ApprovalInfo` nvarchar(255), -- COMMENT 'Thêm sau' --,
   `StockQuantity` int
 );
 
 CREATE TABLE `Review` (
-  `ReviewID` int,
-  `ProductID` int,
-  `ReplyID` int,
-  `CustomerName` nvarchar(255),
+  `ReviewID` int, -- Tự có --
+  `ProductID` int, -- Tự có --
+  `ReplyID` int, -- Tự có --
+  `CustomerName` nvarchar(255), -- Tự có --
   `Title` nvarchar(255),
   `Content` text,
-  `CreatedAt` datetime DEFAULT (now()),
-  `CustomerID` int,
-  PRIMARY KEY (`ReviewID`, `ProductID`)
+  `CreatedAt` datetime DEFAULT (now()), -- Tự có --
+  `CustomerID` int, -- Tự có --
+  PRIMARY KEY (`ReviewID`, `ProductID`) -- Tự có --
 );
 
 CREATE TABLE `Warehouse` (
-  `WarehouseID` int PRIMARY KEY AUTO_INCREMENT,
+  `WarehouseID` int PRIMARY KEY AUTO_INCREMENT, -- Tự có --
   `Name` nvarchar(255) NOT NULL,
   `Address` nvarchar(255) NOT NULL,
   `Latitude` decimal(9,6),
   `Longitude` decimal(9,6),
   `Area` decimal(10,2) COMMENT 'Area in square meters',
   `MaxCapacity` int NOT NULL,
-  `CurrentCapacity` int NOT NULL DEFAULT 0,
-  `OperationalStatus` varchar(50) NOT NULL DEFAULT 'Active',
-  `OperatingHours` varchar(100)
+  `CurrentCapacity` int NOT NULL DEFAULT 0, -- Tự có --
+  `OperationalStatus` varchar(50) NOT NULL DEFAULT 'Active', -- Tự có --
+  `OperatingHours` varchar(100) -- Tự có --
 );
 
 CREATE TABLE `Voucher` (
-  `SellerID` int,
-  `AdminID` int,
-  `VoucherID` int PRIMARY KEY,
+  `SellerID` int, -- Tự có --
+  `AdminID` int, -- Tự có --
+  `VoucherID` int PRIMARY KEY, -- Tự có --
   `PromotionName` nvarchar(255),
-  `Status` varchar(20) DEFAULT 'Active',
-  `CreatedAt` datetime DEFAULT (now()),
-  `ExpiresAt` datetime,
-  `UsageCount` int DEFAULT 0,
+  `Status` varchar(20) DEFAULT 'Active', -- Tự có --
+  `CreatedAt` datetime DEFAULT (now()), -- Tự có --
+  `ExpiresAt` datetime, -- Tự có --
+  `UsageCount` int DEFAULT 0, -- Tự có --
   `TotalQuantity` int,
   `DiscountValue` int,
-  `Description` text,
-  `RemainingQuantity` int DEFAULT 0
+  `Description` text
 );
 
 CREATE TABLE `UseVoucher` (
-  `VoucherID` int,
-  `CustomerID` int,
-  `UsedDate` datetime
+  `VoucherID` int,  -- Tự có --
+  `CustomerID` int -- Tự có --
 );
 
 CREATE TABLE `Shipment` (
-  `ShipmentID` int PRIMARY KEY,
-  `ShipperID` int,
-  `Status` varchar(50),
-  `CurrentPos` nvarchar(255),
-  `LastUpdatedAt` datetime,
-  `VehicleID` int
+  `ShipmentID` int PRIMARY KEY, -- Tự có --
+  `ShipperID` int, -- Tự có --
+  `Status` varchar(50), -- Tự có --
+  `CurrentPos` nvarchar(255), -- Tự có --
+  `LastUpdatedAt` datetime, -- Tự có --
+  `VehicleID` int -- Tự có --
 );
 
 CREATE TABLE `StartWarehouse` (
-  `ShipmentID` int,
-  `WarehouseID` int,
-  `ArrivedAt` timestamp
+  `ShipmentID` int, -- Tự có --
+  `WarehouseID` int,  --Tự có --
+  `ArrivedAt` timestamp -- Tự có --
 );
 
 CREATE TABLE `EndWarehouse` (
-  `ShipmentID` int,
-  `WarehouseID` int,
-  `ArrivedAt` timestamp
+  `ShipmentID` int, -- Tự có --
+  `WarehouseID` int,  --Tự có --
+  `ArrivedAt` timestamp -- Tự có --
 );
 
 CREATE TABLE `StatusLog` (
-  `ShipmentID` int,
-  `StatusLogID` int,
-  `HistoryStatus` varchar(50),
-  PRIMARY KEY (`ShipmentID`, `StatusLogID`)
+  `ShipmentID` int, -- Tự có --
+  `StatusLogID` int, -- Tự có --
+  `HistoryStatus` varchar(50), -- Tự có --
+  PRIMARY KEY (`ShipmentID`, `StatusLogID`) -- Tự có --
 );
 
 CREATE TABLE `Vehicle` (
-  `VehicleID` int PRIMARY KEY,
+  `VehicleID` int PRIMARY KEY, -- Tự có --
   `LicensePlate` varchar(20),
-  `CurrentPos` nvarchar(255),
-  `LastUpdatedAt` datetime,
-  `RegistrationDate` date,
-  `OperationalStatus` varchar(50),
+  `CurrentPos` nvarchar(255), -- Tự có --
+  `LastUpdatedAt` datetime, -- Tự có --
+  `RegistrationDate` date, -- Tự có --
+  `OperationalStatus` varchar(50), -- Tự có --
   `Manufacturer` nvarchar(100),
   `Model` nvarchar(100)
 );
 
 CREATE TABLE `Motorbike` (
-  `MotorbikeID` int PRIMARY KEY,
+  `MotorbikeID` int PRIMARY KEY, -- Tự có --
   `MaxPayload` decimal(8,2) COMMENT 'Maximum payload in kilograms',
   `CargoVolume` decimal(8,2) COMMENT 'Cargo box volume in cubic meters'
 );
 
 CREATE TABLE `Truck` (
-  `TruckID` int PRIMARY KEY,
+  `TruckID` int PRIMARY KEY, -- Tự có --
   `PayloadCapacity` decimal(10,2) NOT NULL COMMENT 'Payload capacity in tons',
   `OwnershipType` varchar(50) NOT NULL DEFAULT 'Owned' COMMENT 'e.g., Owned, Leased',
-  `LeaseStartDate` date,
-  `LeaseEndDate` date
+  `LeaseStartDate` date, 
+  `LeaseEndDate` date 
 );
 
 CREATE TABLE `UseVehicle` (
-  `ShipperID` int,
-  `VehicleID` int,
-  PRIMARY KEY (`ShipperID`, `VehicleID`)
+  `ShipperID` int, -- Tự có --
+  `VehicleID` int, -- Tự có --
+  PRIMARY KEY (`ShipperID`, `VehicleID`) -- Tự có --
 );
 
 CREATE TABLE `CustomerShipment` (
-  `ShipmentID` int PRIMARY KEY,
-  `CustomerID` int,
-  `Position` nvarchar(255),
-  `ArrivedAt` timestamp
+  `ShipmentID` int PRIMARY KEY, -- Tự có --
+  `CustomerID` int, -- Tự có --
+  `Position` nvarchar(255), --Tự có --
+  `ArrivedAt` timestamp -- Tự có --
 );
 
 CREATE TABLE `ShoppingCart` (
-  `CartID` int PRIMARY KEY,
-  `CustomerID` int
+  `CartID` int PRIMARY KEY, -- Tự có --
+  `CustomerID` int --Tự có --
 );
 
 CREATE TABLE `CartDetail` (
-  `CartID` int,
-  `ProductID` int,
-  PRIMARY KEY (`CartID`, `ProductID`)
+  `CartID` int, -- Tự có --
+  `ProductID` int, -- Tự có --
+  PRIMARY KEY (`CartID`, `ProductID`) -- Tự có --
 );
 
 ALTER TABLE `Customer` ADD FOREIGN KEY (`CustomerID`) REFERENCES `User` (`UserID`);
@@ -284,3 +282,4 @@ ALTER TABLE `ShoppingCart` ADD FOREIGN KEY (`CustomerID`) REFERENCES `Customer` 
 ALTER TABLE `CartDetail` ADD FOREIGN KEY (`CartID`) REFERENCES `ShoppingCart` (`CartID`);
 
 ALTER TABLE `CartDetail` ADD FOREIGN KEY (`ProductID`) REFERENCES `Product` (`ProductID`);
+
