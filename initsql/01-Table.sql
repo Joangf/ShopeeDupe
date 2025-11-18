@@ -1,3 +1,7 @@
+-- -- DATABASE (tạo schema)
+-- CREATE DATABASE IF NOT EXISTS BTL_HCSDL;
+-- USE BTL_HCSDL;
+SELECT DATABASE();
 CREATE TABLE `User` (
   `UserID` int PRIMARY KEY AUTO_INCREMENT,  -- Tự có --
   `FullName` nvarchar(255),
@@ -15,7 +19,7 @@ CREATE TABLE `User` (
 
 CREATE TABLE `Customer` (
   `CustomerID` int PRIMARY KEY, -- Tự có --
-  `Type` nvarchar(255), --COMMENT 'Tự có'--,
+  `Type` nvarchar(255), -- COMMENT 'Tự có'--
   `Behaviour` Text -- COMMENT 'Thêm sau' --
 );
 
@@ -147,13 +151,13 @@ CREATE TABLE `Shipment` (
 
 CREATE TABLE `StartWarehouse` (
   `ShipmentID` int, -- Tự có --
-  `WarehouseID` int,  --Tự có --
+  `WarehouseID` int,  -- Tự có --
   `ArrivedAt` timestamp -- Tự có --
 );
 
 CREATE TABLE `EndWarehouse` (
   `ShipmentID` int, -- Tự có --
-  `WarehouseID` int,  --Tự có --
+  `WarehouseID` int,  -- Tự có --
   `ArrivedAt` timestamp -- Tự có --
 );
 
@@ -198,13 +202,13 @@ CREATE TABLE `UseVehicle` (
 CREATE TABLE `CustomerShipment` (
   `ShipmentID` int PRIMARY KEY, -- Tự có --
   `CustomerID` int, -- Tự có --
-  `Position` nvarchar(255), --Tự có --
+  `Position` nvarchar(255), -- Tự có --
   `ArrivedAt` timestamp -- Tự có --
 );
 
 CREATE TABLE `ShoppingCart` (
   `CartID` int PRIMARY KEY, -- Tự có --
-  `CustomerID` int --Tự có --
+  `CustomerID` int -- Tự có --
 );
 
 CREATE TABLE `CartDetail` (
