@@ -1,3 +1,4 @@
+DELIMITER //
 -- Thủ tục thêm một User mới
 CREATE PROCEDURE sp_AddNewUser (
     IN p_FullName NVARCHAR(255), -- Tên đầy đủ
@@ -12,8 +13,18 @@ CREATE PROCEDURE sp_AddNewUser (
 BEGIN
     INSERT INTO User (FullName, Gender, DateOfBirth, NationalID, Email, PhoneNumber, Address, PasswordHash)
     VALUES (p_FullName, p_Gender, p_DateOfBirth, p_NationalID, p_Email, TRIM(p_PhoneNumber), p_Address, p_PasswordHash);
+    INSERT INTO Customer (CustomerID, Type)
+
+    -- Lấy UserID vừa tạo
+    DECLARE newUserID INT;
+    SET newUserID = LAST_INSERT_ID();   -- Phải đảm bảo có AUTO INCREMENT cho UserID
+
+    -- Chèn vào Customer với CustomerID = UserID vừa tạo
+    INSERT INTO Customer (CustomerID, `Type`)   
+    VALUES (newUserID, 'Regular'); -- Ví dụ Type mặc định là 'Regular'
 END //
 DELIMITER;
+
 
 DELIMITER //
 -- Trigger kiểm tra ràng buộc trước khi chèn dữ liệu vào bảng User
@@ -40,7 +51,55 @@ BEGIN
     END IF;
 END;
 //
+DELIMITER ;
 
+
+DELIMITER //
+-- Thủ tục thêm một Seller mới
+CREATE PROCEDURE sp_AddNewSeller (
+    IN p_SellerID INT,                 -- ID người dùng (UserID) đã có
+    IN p_BusinessAddress NVARCHAR(255), -- Địa chỉ kinh doanh
+    IN p_BusinessName NVARCHAR(255) -- Tên doanh nghiệp (không muốn có thì cho NULL, cho khác NULL nếu Type là Business)
+)
+BEGIN
+    -- Chèn thông tin người bán
+    INSERT INTO Seller (SellerID, 'Personal', BusinessAddress, BusinessName)
+    VALUES (p_SellerID, p_Type, p_BusinessAddress, p_BusinessName);
+END;
+//
+DELIMITER ;
+
+
+DELIMITER //
+-- Trigger kiểm tra ràng buộc trước khi chèn dữ liệu vào bảng Seller
+CREATE TRIGGER trg_Seller_BeforeInsert
+BEFORE INSERT ON Seller
+FOR EACH ROW
+BEGIN
+    -- Kiểm tra SellerID tồn tại trong bảng User
+    IF NOT EXISTS (SELECT 1 FROM User WHERE UserID = NEW.SellerID) THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'SellerID does not exist in User table';
+    END IF;
+END;
+//
+DELIMITER;
+
+
+DELIMITER //
+-- Thủ tục sửa Type của Seller
+CREATE PROCEDURE sp_ChangeTypeSeller (
+    IN p_SellerID INT,                 -- ID người bán đã có
+    IN p_Type nvarchar(50), -- Địa chỉ kinh doanh
+    IN p_BusinessName NVARCHAR(255) -- Tên doanh nghiệp (cho khác NULL nếu Type là Business)
+)
+BEGIN
+    UPDATE Seller
+    SET Type = p_Type,
+        BusinessName = p_BusinessName
+    WHERE SellerID = p_SellerID;
+END;
+//
 DELIMITER ;
 
 
