@@ -54,7 +54,7 @@ CREATE PROCEDURE sp_Login (
     IN  p_PasswordHash VARCHAR(255),    -- Mật khẩu đã được băm (nhưng thực chất không băm đâu)
     OUT p_Success TINYINT,       -- 1 = success, 0 = fail
     OUT p_ReturnedUserID INT,     -- UserID nếu success, NULL nếu fail
-    OUT p_ReasonLoginFail VARCHAR(255)  -- 
+    OUT p_ReasonLoginFail VARCHAR(255)  -- Lý do đăng nhập thất bại
 )
 BEGIN
     -- mặc định
