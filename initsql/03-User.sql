@@ -152,3 +152,33 @@ END;
 
 DELIMITER ;
 
+DELIMITER //
+-- Hàm chuyển đổi mật khẩu người dùng
+CREATE PROCEDURE sp_ChangeUserPassword (
+    IN p_UserID INT, -- ID người dùng
+    IN p_NewPasswordHash VARCHAR(255), -- Mật khẩu mới đã được băm
+    OUT p_Success TINYINT, -- 1 = success, 0 = fail
+    OUT p_ReasonFail VARCHAR(255) -- Lý do thất bại nếu có
+)
+BEGIN
+    DECLARE v_exists INT;
+    SET p_Success = 0;  -- Đặt giá trị mặc định cho biến báo thành công
+    SET p_ReasonFail = 'Fail'; -- Đặt giá trị mặc định cho lý do thất bại
+    -- Kiểm tra UserID tồn tại với mật khẩu cũ
+    SELECT COUNT(*) INTO v_exists
+    FROM `User`
+    WHERE UserID = p_UserID;
+
+    IF v_exists = 0 THEN
+        SET p_Success = 0;
+        SET p_ReasonFail = 'UserID not found or old password incorrect';
+    ELSE
+        -- Cập nhật mật khẩu mới
+        UPDATE `User`
+        SET PasswordHash = p_NewPasswordHash
+        WHERE UserID = p_UserID;
+
+        SET p_Success = 1;
+        SET p_ReasonFail = '';
+    END IF;
+END;
