@@ -11,12 +11,12 @@ CREATE PROCEDURE sp_AddNewUser (
     IN p_PasswordHash VARCHAR(255) -- Mật khẩu đã được băm
 )
 BEGIN
+    DECLARE newUserID INT;
+    
     INSERT INTO User (FullName, Gender, DateOfBirth, NationalID, Email, PhoneNumber, Address, PasswordHash)
     VALUES (p_FullName, p_Gender, p_DateOfBirth, p_NationalID, p_Email, TRIM(p_PhoneNumber), p_Address, p_PasswordHash);
-    INSERT INTO Customer (CustomerID, Type)
 
     -- Lấy UserID vừa tạo
-    DECLARE newUserID INT;
     SET newUserID = LAST_INSERT_ID();   -- Phải đảm bảo có AUTO INCREMENT cho UserID
 
     -- Chèn vào Customer với CustomerID = UserID vừa tạo
@@ -62,8 +62,8 @@ CREATE PROCEDURE sp_AddNewSeller (
     IN p_BusinessName NVARCHAR(255) -- Tên doanh nghiệp (không muốn có thì cho NULL, cho khác NULL nếu Type là Business)
 )
 BEGIN
-    -- Chèn thông tin người bán
-    INSERT INTO Seller (SellerID, 'Personal', BusinessAddress, BusinessName)
+    -- Chèn thông tin người bán --
+    INSERT INTO Seller (SellerID, Type, BusinessAddress, BusinessName)
     VALUES (p_SellerID, p_Type, p_BusinessAddress, p_BusinessName);
 END;
 //
@@ -116,14 +116,14 @@ CREATE PROCEDURE sp_Login (
     OUT p_ReasonLoginFail VARCHAR(255)  -- Lý do đăng nhập thất bại
 )
 BEGIN
+    DECLARE v_uid INT;
+    DECLARE v_exists INT;
     -- mặc định
     SET p_Success = 0;
     SET p_ReturnedUserID = NULL;
     SET p_ReasonLoginFail = 'User may not found';
 
     -- Tạm giữ kết quả tìm được
-    DECLARE v_uid INT;
-
     SET v_uid = NULL;
 
     -- Chỉ thực hiện login nếu:
@@ -206,6 +206,7 @@ BEGIN
                 SET p_ReasonLoginFail = 'No valid input provided';
             END IF;
         END IF;
+	END IF;
 END;
 //
 
