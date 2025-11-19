@@ -16,11 +16,10 @@ CREATE TABLE `User` (
   `Address` nvarchar(255),
   `PasswordHash` varchar(255) COMMENT 'Represents the hashed password for security'
 );
-
 CREATE TABLE `Customer` (
   `CustomerID` int PRIMARY KEY, -- Tự có --
   `Type` nvarchar(255), -- COMMENT 'Tự có'--
-  `Behaviour` Text DEFAULT NULL -- COMMENT 'Thêm sau' --
+  `Behaviour` Text -- COMMENT 'Thêm sau' --
 );
 
 CREATE TABLE `Seller` (

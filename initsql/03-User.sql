@@ -13,7 +13,7 @@ CREATE PROCEDURE sp_AddNewUser (
 BEGIN
     DECLARE newUserID INT;
     
-    INSERT INTO 'User' (FullName, Gender, DateOfBirth, NationalID, Email, PhoneNumber, Address, PasswordHash)
+    INSERT INTO User (FullName, Gender, DateOfBirth, NationalID, Email, PhoneNumber, Address, PasswordHash)
     VALUES (p_FullName, p_Gender, p_DateOfBirth, p_NationalID, p_Email, TRIM(p_PhoneNumber), p_Address, p_PasswordHash);
 
     -- Lấy UserID vừa tạo
@@ -29,7 +29,7 @@ DELIMITER ;
 DELIMITER //
 -- Trigger kiểm tra ràng buộc trước khi chèn dữ liệu vào bảng User
 CREATE TRIGGER trg_User_BeforeInsert
-BEFORE INSERT ON 'User'
+BEFORE INSERT ON User
 FOR EACH ROW
 BEGIN
     -- Kiểm tra ngày sinh không lớn hơn hiện tại
@@ -64,10 +64,10 @@ CREATE PROCEDURE sp_AddNewSeller (
 BEGIN
     -- Chèn thông tin người bán --
     IF p_BusinessName IS NOT NULL THEN
-        INSERT INTO Seller (SellerID, 'Type', BusinessAddress, BusinessName)
+        INSERT INTO Seller (SellerID, Type, BusinessAddress, BusinessName)
         VALUES (p_SellerID, 'Business', p_BusinessAddress, p_BusinessName);
     ELSE
-        INSERT INTO Seller (SellerID, 'Type', BusinessAddress, BusinessName)
+        INSERT INTO Seller (SellerID, Type, BusinessAddress, BusinessName)
         VALUES (p_SellerID, 'Personal', p_BusinessAddress, p_BusinessName);
     END IF;
 END;
@@ -100,7 +100,7 @@ CREATE PROCEDURE sp_ChangeTypeSeller (
 )
 BEGIN
     UPDATE Seller
-    SET 'Type' = p_Type,
+    SET Type = p_Type,
         BusinessName = p_BusinessName
     WHERE SellerID = p_SellerID;
 END;
@@ -214,8 +214,8 @@ BEGIN
 	END IF;
 END;
 //
-
 DELIMITER ;
+
 
 DELIMITER //
 -- Hàm chuyển đổi mật khẩu người dùng
@@ -231,7 +231,7 @@ BEGIN
     SET p_ReasonFail = 'Fail'; -- Đặt giá trị mặc định cho lý do thất bại
     -- Kiểm tra UserID tồn tại với mật khẩu cũ
     SELECT COUNT(*) INTO v_exists
-    FROM `User`
+    FROM User
     WHERE UserID = p_UserID;
 
     IF v_exists = 0 THEN
