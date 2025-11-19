@@ -1,7 +1,7 @@
 -- -- DATABASE (tạo schema)
 -- CREATE DATABASE IF NOT EXISTS BTL_HCSDL;
 -- USE BTL_HCSDL;
-SELECT DATABASE();
+-- SELECT DATABASE();
 CREATE TABLE `User` (
   `UserID` int PRIMARY KEY AUTO_INCREMENT,  -- Tự có --
   `FullName` nvarchar(255),

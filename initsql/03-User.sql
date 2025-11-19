@@ -22,7 +22,8 @@ BEGIN
     -- Chèn vào Customer với CustomerID = UserID vừa tạo
     INSERT INTO Customer (CustomerID, `Type`)   
     VALUES (newUserID, 'Regular'); -- Ví dụ Type mặc định là 'Regular'
-END //
+END;
+//
 DELIMITER ;
 
 
@@ -45,7 +46,7 @@ BEGIN
     -- END IF;
 
     -- Kiểm tra số điện thoại quốc tế hợp lệ
-    IF NEW.PhoneNumber IS NOT NULL AND NEW.PhoneNumber NOT REGEXP '^(\+?[0-9]{7,15})$' THEN
+    IF NEW.PhoneNumber IS NOT NULL AND NEW.PhoneNumber NOT REGEXP '^\\+?[0-9]{7,20}$' THEN
         SIGNAL SQLSTATE '45000'
         SET MESSAGE_TEXT = 'PhoneNumber must be a valid international format';
     END IF;
@@ -59,7 +60,7 @@ DELIMITER //
 CREATE PROCEDURE sp_AddNewSeller (
     IN p_SellerID INT,                 -- ID người dùng (UserID) đã có
     IN p_BusinessAddress NVARCHAR(255), -- Địa chỉ kinh doanh
-    IN p_BusinessName NVARCHAR(255) -- Tên doanh nghiệp (không muốn có thì cho NULL, cho khác NULL nếu Type là Business)
+    IN p_BusinessName NVARCHAR(255) -- Tên doanh nghiệp (không muốn là doanh nghiệp thì cho NULL, cho khác NULL nếu Type là Business)
 )
 BEGIN
     -- Chèn thông tin người bán --
@@ -249,3 +250,9 @@ BEGIN
 END;
 //
 DELIMITER ;
+
+
+
+
+
+
