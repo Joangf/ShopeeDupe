@@ -119,7 +119,7 @@ CREATE PROCEDURE sp_Login (
     IN  p_PasswordHash VARCHAR(255),    -- Mật khẩu đã được băm (nhưng thực chất không băm đâu)
     OUT p_Success TINYINT,       -- 1 = success, 0 = fail
     OUT p_ReturnedUserID INT,     -- UserID nếu success, NULL nếu fail
-    OUT p_ReasonLoginFail VARCHAR(255)  -- Lý do đăng nhập thất bại
+    OUT p_ReasonLoginFail VARCHAR(255)  -- Lý do đăng nhập thất bại (NULL là đăng nhập thành công)
 )
 BEGIN
     DECLARE v_uid INT;
@@ -127,7 +127,7 @@ BEGIN
     -- mặc định
     SET p_Success = 0;
     SET p_ReturnedUserID = NULL;
-    SET p_ReasonLoginFail = 'User may not found';
+    SET p_ReasonLoginFail = NULL;
 
     -- Tạm giữ kết quả tìm được
     SET v_uid = NULL;
@@ -140,7 +140,7 @@ BEGIN
     IF p_EmailInput IS NOT NULL AND NOT p_EmailInput REGEXP '^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$' THEN
         SET p_ReasonLoginFail = 'Invalid email format';
     -- Kiểm tra định dạng phone nếu có
-    ELSEIF p_PhoneInput IS NOT NULL AND NOT TRIM(p_PhoneInput) REGEXP '^(\+)?[0-9]+$' THEN
+    ELSEIF p_PhoneInput IS NOT NULL AND NOT TRIM(p_PhoneInput) REGEXP '^\\+?[0-9]{7,20}$' THEN
         SET p_ReasonLoginFail = 'Invalid phone format';
     -- Kiểm tra ít nhất có 1 input để login
     ELSEIF p_UserIDInput IS NULL AND p_EmailInput IS NULL AND p_PhoneInput IS NULL THEN
@@ -224,7 +224,7 @@ CREATE PROCEDURE sp_ChangeUserPassword (
     IN p_UserID INT, -- ID người dùng
     IN p_NewPasswordHash VARCHAR(255), -- Mật khẩu mới đã được băm
     OUT p_Success TINYINT, -- 1 = success, 0 = fail
-    OUT p_ReasonFail VARCHAR(255) -- Lý do thất bại nếu có
+    OUT p_ReasonFail VARCHAR(255) -- Lý do thất bại nếu có (NULL là thành công)
 )
 BEGIN
     DECLARE v_exists INT;
@@ -237,7 +237,7 @@ BEGIN
 
     IF v_exists = 0 THEN
         SET p_Success = 0;
-        SET p_ReasonFail = 'UserID not found or old password incorrect';
+        SET p_ReasonFail = 'UserID not found';
     ELSE
         -- Cập nhật mật khẩu mới
         UPDATE `User`
@@ -245,7 +245,7 @@ BEGIN
         WHERE UserID = p_UserID;
 
         SET p_Success = 1;
-        SET p_ReasonFail = '';
+        SET p_ReasonFail = NULL;
     END IF;
 END;
 //
