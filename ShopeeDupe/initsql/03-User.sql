@@ -13,7 +13,7 @@ CREATE PROCEDURE sp_AddNewUser (
 BEGIN
     DECLARE newUserID INT;
     
-    INSERT INTO 'User' (FullName, Gender, DateOfBirth, NationalID, Email, PhoneNumber, Address, PasswordHash)
+    INSERT INTO User (FullName, Gender, DateOfBirth, NationalID, Email, PhoneNumber, Address, PasswordHash)
     VALUES (p_FullName, p_Gender, p_DateOfBirth, p_NationalID, p_Email, TRIM(p_PhoneNumber), p_Address, p_PasswordHash);
 
     -- Lấy UserID vừa tạo
@@ -23,13 +23,13 @@ BEGIN
     INSERT INTO Customer (CustomerID, `Type`)   
     VALUES (newUserID, 'Regular'); -- Ví dụ Type mặc định là 'Regular'
 END //
-DELIMITER ;
+DELIMITER;
 
 
 DELIMITER //
 -- Trigger kiểm tra ràng buộc trước khi chèn dữ liệu vào bảng User
 CREATE TRIGGER trg_User_BeforeInsert
-BEFORE INSERT ON 'User'
+BEFORE INSERT ON User
 FOR EACH ROW
 BEGIN
     -- Kiểm tra ngày sinh không lớn hơn hiện tại
@@ -63,13 +63,8 @@ CREATE PROCEDURE sp_AddNewSeller (
 )
 BEGIN
     -- Chèn thông tin người bán --
-    IF p_BusinessName IS NOT NULL THEN
-        INSERT INTO Seller (SellerID, 'Type', BusinessAddress, BusinessName)
-        VALUES (p_SellerID, 'Business', p_BusinessAddress, p_BusinessName);
-    ELSE
-        INSERT INTO Seller (SellerID, 'Type', BusinessAddress, BusinessName)
-        VALUES (p_SellerID, 'Personal', p_BusinessAddress, p_BusinessName);
-    END IF;
+    INSERT INTO Seller (SellerID, Type, BusinessAddress, BusinessName)
+    VALUES (p_SellerID, p_Type, p_BusinessAddress, p_BusinessName);
 END;
 //
 DELIMITER ;
@@ -88,7 +83,7 @@ BEGIN
     END IF;
 END;
 //
-DELIMITER ;
+DELIMITER;
 
 
 DELIMITER //
@@ -100,7 +95,7 @@ CREATE PROCEDURE sp_ChangeTypeSeller (
 )
 BEGIN
     UPDATE Seller
-    SET 'Type' = p_Type,
+    SET Type = p_Type,
         BusinessName = p_BusinessName
     WHERE SellerID = p_SellerID;
 END;
@@ -247,5 +242,3 @@ BEGIN
         SET p_ReasonFail = '';
     END IF;
 END;
-//
-DELIMITER ;
