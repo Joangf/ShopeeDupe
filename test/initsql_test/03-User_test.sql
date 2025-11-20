@@ -21,3 +21,7 @@ CALL sp_Test_Login_InvalidPhoneFormat();
 CALL sp_Test_Login_NoInput();
 CALL sp_Test_ChangeUserPassword_Success();
 CALL sp_Test_ChangeUserPassword_UserNotExist();
+CALL sp_Test_Logout_Success();
+CALL sp_Test_Logout_UserNotExist();
+CALL sp_Test_Logout_MultipleTimes();
+SELECT fn_GetUserStatus(-1) AS Status;

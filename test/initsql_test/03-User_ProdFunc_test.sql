@@ -441,3 +441,140 @@ BEGIN
 END;
 //
 DELIMITER ;
+
+-- =========================
+-- TEST FOR sp_Logout
+-- =========================
+
+-- Test: Đăng xuất thành công với UserID hợp lệ (lấy UserID từ login)
+DELIMITER //
+CREATE PROCEDURE sp_Test_Logout_Success()
+BEGIN
+    DECLARE v_Email VARCHAR(255);
+    DECLARE v_Password VARCHAR(255);
+    DECLARE v_UserID INT;
+    DECLARE v_Success TINYINT;
+    DECLARE v_Reason VARCHAR(255);
+    DECLARE v_Status VARCHAR(50);
+
+    -- Thêm user mới để test logout
+    SET v_Email = CONCAT('logoutuser', FLOOR(RAND()*100000), '@gmail.com');
+    SET v_Password = 'logoutpw';
+    CALL sp_AddNewUser(
+        'Logout User',
+        'Male',
+        '1992-12-12',
+        CONCAT('LOGOUTUSER', FLOOR(RAND()*100000)),
+        v_Email,
+        CONCAT('09999999', FLOOR(RAND()*100000)),
+        'Logout Address',
+        v_Password
+    );
+
+    -- Đăng nhập để lấy UserID
+    CALL sp_Login(
+        NULL,
+        v_Email,
+        NULL,
+        v_Password,
+        v_Success,
+        v_UserID,
+        v_Reason
+    );
+
+    -- Đăng xuất user
+    CALL sp_Logout(
+        v_UserID,
+        v_Success,
+        v_Reason
+    );
+
+    -- Lấy trạng thái tài khoản sau khi logout
+    SELECT AccountStatus INTO v_Status FROM User WHERE UserID = v_UserID;
+
+    -- Xuất kết quả
+    SELECT 'Logout Success' AS TestCase, v_Success, v_Reason, v_Status;
+END;
+//
+DELIMITER ;
+
+-- Test: Đăng xuất với UserID không tồn tại
+DELIMITER //
+CREATE PROCEDURE sp_Test_Logout_UserNotExist()
+BEGIN
+    DECLARE v_Success TINYINT;
+    DECLARE v_Reason VARCHAR(255);
+
+    CALL sp_Logout(
+        -99999,
+        v_Success,
+        v_Reason
+    );
+
+    SELECT 'Logout User Not Exist' AS TestCase, v_Success, v_Reason;
+END;
+//
+DELIMITER ;
+
+-- Test: Đăng xuất nhiều lần liên tiếp (lấy UserID từ login)
+DELIMITER //
+CREATE PROCEDURE sp_Test_Logout_MultipleTimes()
+BEGIN
+    DECLARE v_Email VARCHAR(255);
+    DECLARE v_Password VARCHAR(255);
+    DECLARE v_UserID INT;
+    DECLARE v_Success1 TINYINT;
+    DECLARE v_Reason1 VARCHAR(255);
+    DECLARE v_Success2 TINYINT;
+    DECLARE v_Reason2 VARCHAR(255);
+    DECLARE v_Status VARCHAR(50);
+
+    -- Thêm user mới để test logout nhiều lần
+    SET v_Email = CONCAT('logoutmulti', FLOOR(RAND()*100000), '@gmail.com');
+    SET v_Password = 'logoutmultipw';
+    CALL sp_AddNewUser(
+        'Logout Multi User',
+        'Female',
+        '1993-03-03',
+        CONCAT('LOGOUTMULTI', FLOOR(RAND()*100000)),
+        v_Email,
+        CONCAT('09121212', FLOOR(RAND()*100000)),
+        'Logout Multi Address',
+        v_Password
+    );
+
+    -- Đăng nhập để lấy UserID
+    CALL sp_Login(
+        NULL,
+        v_Email,
+        NULL,
+        v_Password,
+        v_Success1,
+        v_UserID,
+        v_Reason1
+    );
+
+    -- Đăng xuất lần 1
+    CALL sp_Logout(
+        v_UserID,
+        v_Success1,
+        v_Reason1
+    );
+
+    -- Đăng xuất lần 2
+    CALL sp_Logout(
+        v_UserID,
+        v_Success2,
+        v_Reason2
+    );
+
+    -- Lấy trạng thái tài khoản sau khi logout
+    SELECT AccountStatus INTO v_Status FROM User WHERE UserID = v_UserID;
+
+    -- Xuất kết quả
+    SELECT 'Logout Multiple Times' AS TestCase, v_Success1 AS FirstLogoutSuccess, v_Reason1 AS FirstLogoutReason,
+           v_Success2 AS SecondLogoutSuccess, v_Reason2 AS SecondLogoutReason, v_Status;
+END;
+//
+DELIMITER ;
+

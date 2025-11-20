@@ -13,8 +13,8 @@ CREATE PROCEDURE sp_AddNewUser (
 BEGIN
     DECLARE newUserID INT;
     
-    INSERT INTO User (FullName, Gender, DateOfBirth, NationalID, Email, PhoneNumber, Address, PasswordHash)
-    VALUES (p_FullName, p_Gender, p_DateOfBirth, p_NationalID, p_Email, TRIM(p_PhoneNumber), p_Address, p_PasswordHash);
+    INSERT INTO User (FullName, Gender, DateOfBirth, NationalID, LastLogin, Email, PhoneNumber, Address, PasswordHash)
+    VALUES (p_FullName, p_Gender, p_DateOfBirth, p_NationalID, NOW(), p_Email, TRIM(p_PhoneNumber), p_Address, p_PasswordHash);
 
     -- Lấy UserID vừa tạo
     SET newUserID = LAST_INSERT_ID();   -- Phải đảm bảo có AUTO INCREMENT cho UserID
@@ -33,6 +33,13 @@ CREATE TRIGGER trg_User_BeforeInsert
 BEFORE INSERT ON User
 FOR EACH ROW
 BEGIN
+
+    -- Kiểm tra giới tính hợp lệ
+    IF NEW.Gender NOT IN ('Male', 'Female') THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'Gender must be either ''Male'' or ''Female''';
+    END IF;
+
     -- Kiểm tra ngày sinh không lớn hơn hiện tại
     IF NEW.DateOfBirth IS NOT NULL AND NEW.DateOfBirth > CURRENT_DATE() THEN
         SIGNAL SQLSTATE '45000'
@@ -40,70 +47,16 @@ BEGIN
     END IF;
 
     -- -- Kiểm tra cú pháp email
-    -- IF NEW.Email NOT REGEXP '^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$' THEN
-    --     SIGNAL SQLSTATE '45000'
-    --     SET MESSAGE_TEXT = 'Email format is invalid';
-    -- END IF;
+    IF NEW.Email NOT REGEXP '^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$' THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'Email format is invalid';
+    END IF;
 
     -- Kiểm tra số điện thoại quốc tế hợp lệ
     IF NEW.PhoneNumber IS NOT NULL AND NEW.PhoneNumber NOT REGEXP '^\\+?[0-9]{7,20}$' THEN
         SIGNAL SQLSTATE '45000'
         SET MESSAGE_TEXT = 'PhoneNumber must be a valid international format';
     END IF;
-END;
-//
-DELIMITER ;
-
-
-DELIMITER //
--- Thủ tục thêm một Seller mới
-CREATE PROCEDURE sp_AddNewSeller (
-    IN p_SellerID INT,                 -- ID người dùng (UserID) đã có
-    IN p_BusinessAddress NVARCHAR(255), -- Địa chỉ kinh doanh
-    IN p_BusinessName NVARCHAR(255) -- Tên doanh nghiệp (không muốn là doanh nghiệp thì cho NULL, cho khác NULL nếu Type là Business)
-)
-BEGIN
-    -- Chèn thông tin người bán --
-    IF p_BusinessName IS NOT NULL THEN
-        INSERT INTO Seller (SellerID, Type, BusinessAddress, BusinessName)
-        VALUES (p_SellerID, 'Business', p_BusinessAddress, p_BusinessName);
-    ELSE
-        INSERT INTO Seller (SellerID, Type, BusinessAddress, BusinessName)
-        VALUES (p_SellerID, 'Personal', p_BusinessAddress, p_BusinessName);
-    END IF;
-END;
-//
-DELIMITER ;
-
-
-DELIMITER //
--- Trigger kiểm tra ràng buộc trước khi chèn dữ liệu vào bảng Seller
-CREATE TRIGGER trg_Seller_BeforeInsert
-BEFORE INSERT ON Seller
-FOR EACH ROW
-BEGIN
-    -- Kiểm tra SellerID tồn tại trong bảng User
-    IF NOT EXISTS (SELECT 1 FROM User WHERE UserID = NEW.SellerID) THEN
-        SIGNAL SQLSTATE '45000'
-        SET MESSAGE_TEXT = 'SellerID does not exist in User table';
-    END IF;
-END;
-//
-DELIMITER ;
-
-
-DELIMITER //
--- Thủ tục sửa Type của Seller
-CREATE PROCEDURE sp_ChangeTypeSeller (
-    IN p_SellerID INT,                 -- ID người bán đã có
-    IN p_Type nvarchar(50), -- Địa chỉ kinh doanh
-    IN p_BusinessName NVARCHAR(255) -- Tên doanh nghiệp (cho khác NULL nếu Type là Business)
-)
-BEGIN
-    UPDATE Seller
-    SET Type = p_Type,
-        BusinessName = p_BusinessName
-    WHERE SellerID = p_SellerID;
 END;
 //
 DELIMITER ;
@@ -247,6 +200,55 @@ BEGIN
         SET p_Success = 1;
         SET p_ReasonFail = NULL;
     END IF;
+END;
+//
+DELIMITER ;
+
+
+DELIMITER //
+-- Thủ tục đăng xuất tài khoản người dùng
+-- Cho phép gọi thủ tục đăng xuất nhiều lần liên tiếp thành công
+CREATE PROCEDURE sp_Logout (
+    IN p_UserID INT, -- ID người dùng cần đăng xuất
+    OUT p_Success TINYINT, -- 1 = success, 0 = fail
+    OUT p_ReasonFail VARCHAR(255) -- Lý do thất bại nếu có (NULL là thành công)
+)
+BEGIN
+    DECLARE v_exists INT;
+    SET p_Success = 0;
+    SET p_ReasonFail = 'Fail';
+    -- Kiểm tra UserID tồn tại
+    SELECT COUNT(*) INTO v_exists
+    FROM User
+    WHERE UserID = p_UserID;
+
+    IF v_exists = 0 THEN
+        SET p_Success = 0;
+        SET p_ReasonFail = 'UserID not found';
+    ELSE
+        -- Cập nhật trạng thái tài khoản thành 'Logged out'
+        UPDATE `User`
+        SET AccountStatus = 'Logged out'
+        WHERE UserID = p_UserID;
+
+        SET p_Success = 1;
+        SET p_ReasonFail = NULL;
+    END IF;
+END;
+//
+DELIMITER ;
+
+
+DELIMITER //
+-- Hàm trả về trạng thái tài khoản người dùng
+CREATE FUNCTION fn_GetUserStatus(p_UserID INT) -- ID người dùng cần lấy trạng thái tài khoản
+RETURNS VARCHAR(50)	-- Trả về NULL nếu không tìm thấy ID người dùng tương ứng
+DETERMINISTIC
+BEGIN
+    DECLARE v_AccountStatus VARCHAR(50);
+    SET v_AccountStatus = NULL;
+    SELECT AccountStatus INTO v_AccountStatus FROM User WHERE UserID = p_UserID;
+    RETURN v_AccountStatus;
 END;
 //
 DELIMITER ;

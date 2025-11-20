@@ -16,6 +16,10 @@ CREATE TABLE `User` (
   `Address` nvarchar(255),
   `PasswordHash` varchar(255) COMMENT 'Represents the hashed password for security'
 );
+ALTER TABLE User RENAME INDEX `Email` TO `ux_user_email`;
+ALTER TABLE User RENAME INDEX `PhoneNumber` TO `ux_user_phone`;
+ALTER TABLE User RENAME INDEX `NationalID` TO `ux_user_nationalid`;
+
 CREATE TABLE `Customer` (
   `CustomerID` int PRIMARY KEY, -- Tự có --
   `Type` nvarchar(255), -- COMMENT 'Tự có'--
