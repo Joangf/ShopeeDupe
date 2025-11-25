@@ -14,9 +14,10 @@ userRoute.post('', postUser);
 
 // register user
 userRoute.post('/user', postUser);
-// login user
-userRoute.post("/auth/login", getUsers);
+// login customer
+userRoute.post("/auth/login/customer", getUsers);
 userRoute.post("/auth/forgot-password", forgotPassword);
 userRoute.post("/verify/email", verifyEmail);
 userRoute.post("/auth/reset-password", resetPassword);
+userRoute.post("/auth/login/seller", resetPassword);
 export default userRoute;
