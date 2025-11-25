@@ -1,6 +1,6 @@
 DELIMITER //
 -- Thủ tục thêm một User mới
-CREATE PROCEDURE sp_AddNewUser (
+CREATE PROCEDURE sp_AddNewCustomer (
     IN p_FullName NVARCHAR(255), -- Tên đầy đủ
     IN p_Gender NVARCHAR(10), -- Giới tính (Chỉ là 'Male' hoặc 'Female', không chấp nhận cả 'M' hoặc 'F')
     IN p_DateOfBirth DATE, -- Ngày sinh (không được lớn hơn ngày hiện tại)
@@ -12,7 +12,7 @@ CREATE PROCEDURE sp_AddNewUser (
 )
 BEGIN
     DECLARE newUserID INT;
-    
+
     INSERT INTO User (FullName, Gender, DateOfBirth, NationalID, LastLogin, Email, PhoneNumber, Address, PasswordHash)
     VALUES (p_FullName, p_Gender, p_DateOfBirth, p_NationalID, NOW(), p_Email, TRIM(p_PhoneNumber), p_Address, p_PasswordHash);
 
@@ -253,8 +253,91 @@ END;
 //
 DELIMITER ;
 
+-- --------------------------------------------------------------------------------
+-- Function 1: Find Customer using Email or Phone
+-- --------------------------------------------------------------------------------
+DELIMITER //
+CREATE FUNCTION func_FindCustomerByEmail (
+    p_Email VARCHAR(255)
+)
+RETURNS INT READS SQL DATA
+BEGIN
+    DECLARE v_CustomerID INT;
 
+    SELECT C.CustomerID INTO v_CustomerID
+    FROM Customer C
+    JOIN `User` U ON C.CustomerID = U.UserID
+    WHERE U.Email = p_Email
+    LIMIT 1;
 
+    RETURN v_CustomerID;
+END;
+//
+DELIMITER ;
 
+DELIMITER //
+CREATE FUNCTION func_FindCustomerByPhone (
+    p_Phone VARCHAR(20)
+)
+RETURNS INT READS SQL DATA
+BEGIN
+    DECLARE v_CustomerID INT;
+
+    SELECT C.CustomerID INTO v_CustomerID
+    FROM Customer C
+    JOIN `User` U ON C.CustomerID = U.UserID
+    WHERE U.PhoneNumber = TRIM(p_Phone)
+    LIMIT 1;
+
+    RETURN v_CustomerID;
+END;
+//
+DELIMITER ;
+
+DELIMITER //
+CREATE FUNCTION func_FindCustomerByEmailandPhone (
+    p_Phone VARCHAR(20),
+    p_Email VARCHAR(255)
+)
+RETURNS INT READS SQL DATA
+BEGIN
+    DECLARE v_CustomerID INT;
+
+    SELECT C.CustomerID INTO v_CustomerID
+    FROM Customer C
+    JOIN `User` U ON C.CustomerID = U.UserID
+    WHERE U.PhoneNumber = TRIM(p_Phone)
+        AND U.Email = p_Email
+    LIMIT 1;
+
+    RETURN v_CustomerID;
+END;
+//
+DELIMITER ;
+
+-- --------------------------------------------------------------------------------
+-- Function 2: Find customer using email or password
+-- --------------------------------------------------------------------------------
+DELIMITER //
+CREATE FUNCTION func_AuthenticateCustomer (
+    p_Email VARCHAR(255),
+    p_PasswordHash VARCHAR(255)
+)
+RETURNS INT READS SQL DATA
+BEGIN
+    DECLARE v_CustomerID INT;
+
+    SELECT C.CustomerID INTO v_CustomerID
+    FROM Customer C
+    JOIN `User` U ON C.CustomerID = U.UserID
+    WHERE U.Email = p_Email
+        AND U.PasswordHash = p_PasswordHash
+    LIMIT 1;
+
+    RETURN v_CustomerID;
+END;
+//
+
+DELIMITER ;
 
 
