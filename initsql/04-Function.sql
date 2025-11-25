@@ -1,5 +1,7 @@
 DELIMITER //
+-- --------------------------------------------------------------------------------
 -- Ham 1: TINH TONG CHI TIEU KHACH HANG (DUNG CON TRO & LOOP)
+-- --------------------------------------------------------------------------------
 CREATE FUNCTION func_CalculateCustomerSpending (
     p_CustomerID INT,
     p_TargetYear INT
@@ -42,10 +44,11 @@ BEGIN
     RETURN v_TotalAmount;
 END //
 DELIMITER ;
--- --------------------------------------------------------------------------------
 
-DELIMITER //
+-- --------------------------------------------------------------------------------
 -- Ham 2: PHAN LOAI HANG KHACH HANG (DUNG IF/ELSE IF & GOI HAM 1)
+-- --------------------------------------------------------------------------------
+DELIMITER //
 CREATE FUNCTION func_GetCustomerTier (
     p_CustomerID INT,
     p_TargetYear INT
