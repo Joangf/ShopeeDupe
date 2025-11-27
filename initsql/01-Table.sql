@@ -62,9 +62,9 @@ CREATE TABLE `Order` (
 
 CREATE TABLE `Package` (
   `OrderID` int,  -- Tự có --
-  `PackageID` int PRIMARY KEY, -- Tự có --
+  `PackageID` int PRIMARY KEY AUTO_INCREMENT, -- Tự có --
   `WarehouseID` int, -- Tự có --
-  `PackagedAt` datetime, -- Tự có --
+  `PackagedAt` datetime DEFAULT (now()), -- Tự có --
   `Status` varchar(50), -- Tự có --
   `Quantity` int
 );
@@ -81,6 +81,7 @@ CREATE TABLE `PackageItem` (
   `Quantity` int,
   PRIMARY KEY (`PackageItemID`, `ProductID`) -- Tự có --
 );
+ALTER TABLE PackageItem RENAME INDEX `PackageItemID` TO `ux_packageitem_packageitemid`;
 
 CREATE TABLE `Product` (
   `SellerID` int,
