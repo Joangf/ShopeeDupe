@@ -5,8 +5,9 @@ import bcrypt from "bcryptjs";
 const JWT_SECRET = process.env.JWT_SECRET || "shopeedupe";
 
 // ==============================================================================
-// GetUser(email, password)
+// Customer
 // ==============================================================================
+// Customer Login
 export const customerLogin = async (req, res) => {
   try {
     const { email, password } = req.body;
@@ -16,24 +17,19 @@ export const customerLogin = async (req, res) => {
 
     const sql = "SELECT func_AuthenticateCustomer(?, ?) AS result";
 
-    const db = await pool.getConnection();
-    const [rows] = await db.query(sql, [email, password]);
-    if (!rows[0].result) {
+    const [row] = await pool.query(sql, [email, password]);
+    if (!row[0].result) {
       return res.status(401).json({ error: "Invalid email or password" });
     }
 
-    res.status(200).json({ message: "Login successful", result: rows[0] });
+    res.status(200).json({ message: "Login successful", result: row[0] });
   } catch (error) {
     console.error("Unexpected error:", error);
     res.status(500).json({ error: "Internal server errors" });
-  } finally {
-    db.release();
   }
 };
 
-// ==============================================================================
-// Register
-// ==============================================================================
+// Customer Register
 export const customerRegister = async (req, res) => {
   try {
     const {
@@ -56,7 +52,6 @@ export const customerRegister = async (req, res) => {
     const fullName = `${firstName} ${lastName}`;
 
     const sql = "CALL sp_AddNewCustomer(?, ?, ?, ?, ?, ?, ?, ?)";
-
     const db = await pool.getConnection();
 
     try {
@@ -99,6 +94,94 @@ export const customerRegister = async (req, res) => {
   }
 };
 
+// ==============================================================================
+// Seller
+// ==============================================================================
+// Seller Login
+export const sellerLogin = async (req, res) => {
+  try {
+    const { email, password } = req.body;
+    console.log(email, password);
+    if (!email || !password) {
+      return res.status(400).json({ error: "Missing email or password" });
+    }
+    const [row] = await pool.query(
+      "SELECT func_AuthenticateSeller(?, ?) AS result",
+      [email, password]
+    );
+    if (!row[0].result) {
+      return res.status(401).json({ error: "Invalid email or password" });
+    }
+
+    res.status(200).json({ message: "Login successful", result: row[0] });
+  } catch (error) {
+    console.error("Unexpected error:", error);
+    res.status(500).json({ error: "Internal server errors" });
+  }
+};
+
+// Seller Register
+export const sellerRegister = async (req, res) => {
+  try {
+    const {
+      firstName,
+      lastName,
+      gender,
+      dateOfBirth,
+      nationalId,
+      email,
+      phoneNumber,
+      address,
+      password,
+      businessAddress,
+      businessName,
+    } = req.body;
+
+    if (
+      !firstName ||
+      !lastName ||
+      !email ||
+      !password ||
+      !nationalId ||
+      !phoneNumber
+    ) {
+      return res.status(400).json({ error: "Missing required fields" });
+    }
+
+    const [row] = await pool.query(
+      "CALL sp_AddNewSeller(?, ?, ?, ?, ?, ?, ?, ?, ? ,?)",
+      [
+        `${firstName} ${lastName}`,
+        gender,
+        dateOfBirth,
+        nationalId,
+        email,
+        phoneNumber,
+        address,
+        password,
+        businessAddress,
+        businessName,
+      ]
+    );
+    res.status(201).json({ message: "Seller created successfully", data: row });
+  } catch (error) {
+    if (error.code === "ER_DUP_ENTRY") {
+      let field = "";
+
+      if (error.sqlMessage.includes("ux_user_email")) field = "Email";
+      else if (error.sqlMessage.includes("ux_user_phone"))
+        field = "Phone number";
+      else if (error.sqlMessage.includes("ux_user_nationalid"))
+        field = "National ID";
+
+      return res.status(400).json({ error: `${field} already exists` });
+    }
+
+    console.error("Unexpected error:", error);
+    res.status(500).json({ error: "Internal server errors" });
+  }
+};
+
 export const forgotPassword = async (req, res) => {
   const { email, phonenumber } = req.body;
 
@@ -117,7 +200,7 @@ export const forgotPassword = async (req, res) => {
     }
 
     const CustomerID = rows[0][0].CustomerID;
-    
+
     const infoSql = "SELECT FullName, Email FROM `User` WHERE UserID = ?";
     const [infoRows] = await db.query(infoSql, [CustomerID]);
     const customer = infoRows[0];
@@ -142,12 +225,9 @@ export const forgotPassword = async (req, res) => {
 
     await transporter.sendMail(mailOptions);
 
-    res
-      .status(200)
-      .json({
-        message: "Password reset successfully. Please check your email.",
-      });
-
+    res.status(200).json({
+      message: "Password reset successfully. Please check your email.",
+    });
   } catch (error) {
     console.error("Forgot password error:", error);
     res.status(500).json({ error: "Internal server error" });
@@ -155,24 +235,9 @@ export const forgotPassword = async (req, res) => {
 };
 
 export const verifyEmail = async (req, res) => {
-  const { email} = req.body;
-
-  
+  const { email } = req.body;
 };
 
 export const resetPassword = async (req, res) => {
   const { email, newPassword } = req.body;
 };
-
-// =============================================================
-// Seller Login - to be implemented
-// =============================================================
-export const sellerLogin = async (req, res) => {
-  
-}
-// =============================================================
-// Seller Register - to be implemented
-// =============================================================
-export const sellerRegister = async (req, res) => {
-  
-}

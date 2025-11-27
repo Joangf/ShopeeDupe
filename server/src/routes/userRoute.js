@@ -22,7 +22,6 @@ userRoute.post("/auth/login/customer", customerLogin);
 userRoute.post("/auth/forgot-password", forgotPassword);
 userRoute.post("/verify/email", verifyEmail);
 userRoute.post("/auth/reset-password", resetPassword);
-userRoute.post("/auth/login/seller", resetPassword);
 
 // ============================================================
 // Seller Routes
