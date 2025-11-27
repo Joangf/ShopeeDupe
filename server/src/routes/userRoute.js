@@ -1,23 +1,34 @@
 import express from 'express';
 import {
-  getUsers,
-  postUser,
+  customerLogin,
+  customerRegister,
   forgotPassword,
   verifyEmail,
   resetPassword,
+  sellerLogin,
+  sellerRegister
 } from "../controllers/userController.js";
 import { authAdmin } from '../middleware/authUser.js';
 const userRoute = express.Router();
 
-userRoute.get('', authAdmin, getUsers);
-userRoute.post('', postUser);
+// ============================================================
+// Customer Routes
+// ============================================================
 
 // register user
-userRoute.post('/user', postUser);
+userRoute.post('/auth/register/customer', customerRegister);
 // login customer
-userRoute.post("/auth/login/customer", getUsers);
+userRoute.post("/auth/login/customer", customerLogin);
 userRoute.post("/auth/forgot-password", forgotPassword);
 userRoute.post("/verify/email", verifyEmail);
 userRoute.post("/auth/reset-password", resetPassword);
 userRoute.post("/auth/login/seller", resetPassword);
+
+// ============================================================
+// Seller Routes
+// ============================================================
+userRoute.post("/auth/login/seller", sellerLogin);
+userRoute.post("/auth/register/seller", sellerRegister);
+
+
 export default userRoute;

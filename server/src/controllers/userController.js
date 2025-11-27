@@ -4,120 +4,100 @@ import bcrypt from "bcryptjs";
 // // Config JWT and twilio
 const JWT_SECRET = process.env.JWT_SECRET || "shopeedupe";
 
-// const client = twilio(process.env.TWILIO_SID, process.env.TWILIO_AUTH_TOKEN);
-// const TWILIO_FROM = process.env.TWILIO_FROM;
-
-// // Create OTP
-// function generateOTP(length = 6) {
-//   let otp = "";
-//   for (let i = 0; i < length; i++) otp += Math.floor(Math.random() * 10);
-//   return otp;
-// }
-
-const transporter = nodemailer.createTransport({
-  host: "smtp.gmail.com",
-  port: 465,
-  secure: true,
-  auth: {
-    user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASS,
-  },
-});
-
 // ==============================================================================
 // GetUser(email, password)
 // ==============================================================================
-export const getUsers = async (req, res) => {
+export const customerLogin = async (req, res) => {
   try {
-    const {
-      email,
-      password
-    } = req.body;
+    const { email, password } = req.body;
     if (!email || !password) {
       return res.status(400).json({ error: "Missing email or password" });
     }
 
-    const sql = "func_AuthenticateCustomer(?, ?)";
+    const sql = "SELECT func_AuthenticateCustomer(?, ?) AS result";
 
     const db = await pool.getConnection();
     const [rows] = await db.query(sql, [email, password]);
-    if (rows.length === 0) {
+    if (!rows[0].result) {
       return res.status(401).json({ error: "Invalid email or password" });
     }
 
     res.status(200).json({ message: "Login successful", result: rows[0] });
   } catch (error) {
     console.error("Unexpected error:", error);
-    res.status(500).json({ error: "Internal server error" });
+    res.status(500).json({ error: "Internal server errors" });
+  } finally {
+    db.release();
   }
 };
 
 // ==============================================================================
 // Register
 // ==============================================================================
-export const postUser = async (req, res) => {
+export const customerRegister = async (req, res) => {
   try {
     const {
-      firstname,
+      firstName,
       lastName,
       gender,
-      dateofbirth,
-      nationalid,
+      dateOfBirth,
+      nationalId,
       email,
-      phonenumber,
+      phoneNumber,
       address,
       password,
     } = req.body;
 
+    // Validate required fields
     if (!firstName || !lastName || !email || !password) {
       return res.status(400).json({ error: "Missing required fields" });
     }
-    
+
+    const fullName = `${firstName} ${lastName}`;
+
     const sql = "CALL sp_AddNewCustomer(?, ?, ?, ?, ?, ?, ?, ?)";
 
-    fullname = firstname + " " + lastName;
     const db = await pool.getConnection();
-    db.query(
-      sql,
-      [
-        fullname,
+
+    try {
+      const [result] = await db.query(sql, [
+        fullName,
         gender,
-        dateofbirth,
-        nationalid,
+        dateOfBirth,
+        nationalId,
         email,
-        phonenumber,
+        phoneNumber,
         address,
         password,
-      ],
-      (err, result) => {
-        if (err) {
-          if (err.code === "ER_DUP_ENTRY") {
-            let field = "";
-            if (err.sqlMessage.includes("ux_user_email")) field = "Email";
-            else if (err.sqlMessage.includes("ux_user_phone"))
-              field = "Phone number";
-            else if (err.sqlMessage.includes("ux_user_nationalid"))
-              field = "National ID";
+      ]);
 
-            return res.status(400).json({ error: `${field} already exists` });
-          }
-          console.error("Error executing stored procedure:", err);
-          return res.status(500).json({ error: "Internal server error" });
-        }
-        res.status(201).json({
-          message: "User created successfully",
-          data: result,
-        });
+      return res.status(201).json({
+        message: "User created successfully",
+        data: result,
+      });
+    } catch (err) {
+      if (err.code === "ER_DUP_ENTRY") {
+        let field = "";
+
+        if (err.sqlMessage.includes("ux_user_email")) field = "Email";
+        else if (err.sqlMessage.includes("ux_user_phone"))
+          field = "Phone number";
+        else if (err.sqlMessage.includes("ux_user_nationalid"))
+          field = "National ID";
+
+        return res.status(400).json({ error: `${field} already exists` });
       }
-    );
+
+      console.error("Error executing stored procedure:", err);
+      return res.status(500).json({ error: "Internal server error" });
+    } finally {
+      db.release();
+    }
   } catch (error) {
     console.error("Unexpected error:", error);
-    res.status(500).json({ error: "Internal server error" });
+    return res.status(500).json({ error: "Internal server err" });
   }
 };
-
-// 
-
 
 export const forgotPassword = async (req, res) => {
   const { email, phonenumber } = req.body;
@@ -183,3 +163,16 @@ export const verifyEmail = async (req, res) => {
 export const resetPassword = async (req, res) => {
   const { email, newPassword } = req.body;
 };
+
+// =============================================================
+// Seller Login - to be implemented
+// =============================================================
+export const sellerLogin = async (req, res) => {
+  
+}
+// =============================================================
+// Seller Register - to be implemented
+// =============================================================
+export const sellerRegister = async (req, res) => {
+  
+}

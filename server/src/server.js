@@ -6,7 +6,7 @@ const app = express();
 app.use(express.json());
 
 // API routes would be defined here
-app.use('/api/user', userRoute);
+app.use('/api', userRoute);
 
 const PORT = process.env.SERVER_PORT || 3000;
 app.listen(PORT, () => {
