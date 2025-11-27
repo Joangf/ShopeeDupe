@@ -68,6 +68,7 @@ BEGIN
 END //
 DELIMITER //
 
+
 DELIMITER //
 
 CREATE TRIGGER trg_Product_BeforeInsert
@@ -90,6 +91,40 @@ BEGIN
     IF NEW.Barcode IS NOT NULL AND NEW.Barcode REGEXP '[^0-9]' THEN
         SIGNAL SQLSTATE '45000'
         SET MESSAGE_TEXT = 'Barcode must contain only digits';
+    END IF;
+END;
+//
+
+DELIMITER ;
+
+
+DELIMITER //
+-- Thủ tục thêm một PackageItem mới
+CREATE PROCEDURE sp_AddPackageItem (
+    IN p_ProductID INT, -- Mã sản phẩm (đảm bảo dãng tồn tại trong bảng Product)
+    IN p_PackageID INT, -- Mã gói sản phẩm (đảm bảo đã tồn tại trong bảng Package)
+    IN p_PackageItemID INT, -- Mã chi tiết gói sản phẩm (tự chọn cách tạo ID này, miễn sao không trùng cho cùng một ProductID)
+    IN p_Quantity INT -- Số lượng sản phẩm trong gói (phải > 0)
+)
+BEGIN
+
+    -- Thêm PackageItem mới 
+    INSERT INTO PackageItem (ProductID, PackageID, PackageItemID, Quantity)
+    VALUES (p_ProductID, p_PackageID, p_PackageItemID, p_Quantity);
+END;
+//
+DELIMITER ;
+
+DELIMITER //
+-- Trigger kiểm tra dữ liệu khi insert vào PackageItem
+CREATE TRIGGER trg_PackageItem_BeforeInsert
+BEFORE INSERT ON PackageItem
+FOR EACH ROW
+BEGIN
+    -- Kiểm tra số lượng phải > 0
+    IF NEW.Quantity <= 0 THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'Quantity pf Sold Product must be greater than 0';
     END IF;
 END;
 //
