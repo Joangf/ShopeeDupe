@@ -81,7 +81,7 @@ CREATE TABLE `PackageItem` (
   `Quantity` int,
   PRIMARY KEY (`PackageItemID`, `ProductID`) -- Tự có --
 );
-ALTER TABLE PackageItem RENAME INDEX `PackageItemID` TO `ux_packageitem_packageitemid`;
+-- ALTER TABLE PackageItem RENAME INDEX `PackageItemID` TO `ux_packageitem_packageitemid`;
 
 CREATE TABLE `Product` (
   `SellerID` int,

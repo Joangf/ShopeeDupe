@@ -36,6 +36,7 @@ BEGIN
     SET Status = p_Status
     WHERE PackageID = p_PackageID;
 END;
+//
 DELIMITER ;
 
 -- Thủ tục cập nhật Quantity của Package (Quantity phải > 0)
