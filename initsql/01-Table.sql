@@ -99,7 +99,7 @@ CREATE TABLE `Product` (
 );
 
 CREATE TABLE `Review` (
-  `ReviewID` int, -- Tự có --
+  `ReviewID` int,
   `ProductID` int, -- Tự có --
   `ReplyID` int, -- Tự có --
   `CustomerName` nvarchar(255), -- Tự có --
@@ -109,6 +109,9 @@ CREATE TABLE `Review` (
   `CustomerID` int, -- Tự có --
   PRIMARY KEY (`ReviewID`, `ProductID`) -- Tự có --
 );
+ALTER TABLE `Review` RENAME INDEX `ProductID` TO `ux_review_productid`;
+ALTER TABLE `Review` RENAME INDEX `ReplyID` TO `ux_review_replyid`;
+ALTER TABLE `Review` RENAME INDEX `CustomerID` TO `ux_review_customerid`;
 
 CREATE TABLE `Warehouse` (
   `WarehouseID` int PRIMARY KEY AUTO_INCREMENT, -- Tự có --
