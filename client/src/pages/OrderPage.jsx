@@ -45,7 +45,7 @@ const formatPrice = (price) => {
 };
 
 // --- Main Page Component ---
-const OrderPage = () => {
+const OrderPage = ({ isLoggedIn, setIsLoggedIn }) => {
   const [orders, setOrders] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const navigate = useNavigate();
@@ -126,7 +126,7 @@ const OrderPage = () => {
 
   return (
     <>
-      <Navbar />
+      <Navbar isLoggedIn={isLoggedIn} setIsLoggedIn={setIsLoggedIn} />
       <div className="order-page-container">
         <div className="order-content">
           <h1 className="order-page-title">My Orders</h1>

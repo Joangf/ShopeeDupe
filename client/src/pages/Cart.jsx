@@ -28,7 +28,7 @@ const formatPrice = (price) => {
   }).format(price);
 };
 
-const Cart = () => {
+const Cart = ({ isLoggedIn, setIsLoggedIn }) => {
   const [cartItems, setCartItems] = useState(initialCartItems);
   const navigate = useNavigate();
 
@@ -149,7 +149,7 @@ const Cart = () => {
 
   return (
     <>
-      <Navbar />
+      <Navbar isLoggedIn={isLoggedIn} setIsLoggedIn={setIsLoggedIn} />
       <div className="cart-page-container">
         <div className="cart-content">
           <h1 className="cart-page-title">SHOPPING CART</h1>

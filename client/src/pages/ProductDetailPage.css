@@ -21,9 +21,8 @@
   transform: translateY(-1px);
 }
 
-/* --- NEW: Secondary Button Style --- */
-.secondary-btn {
-  padding: 10px 22px; /* Slightly smaller */
+.secondary-btn-review {
+    padding: 10px 22px; /* Slightly smaller */
   border: 2px solid #2D6A9E;
   border-radius: 6px;
   font-family: 'Roboto', -apple-system, Roboto, Helvetica, sans-serif;
@@ -34,10 +33,11 @@
   background: transparent;
   color: #2D6A9E;
 }
-.secondary-btn:hover:not(:disabled) {
-  background: #F0F5F9; /* Very light blue */
+.secondary-btn-review:hover:not(:disabled) {
+  background: #F0F5F9;
   transform: translateY(-1px);
 }
+
 
 .quantity-selector {
   display: flex;

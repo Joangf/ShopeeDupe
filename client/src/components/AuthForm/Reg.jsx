@@ -1,49 +1,66 @@
 import "../../pages/Login.css";
 import AnimatedSubmitButton from "../AnimatedSubmitButton";
-const Reg = ({formData ,handleSubmit, handleInputChange, isLoading, invalidSubmit }) => (
+
+const Reg = ({ formData, handleSubmit, handleInputChange, isLoading, invalidSubmit }) => (
   <form onSubmit={handleSubmit} className="auth-form">
-    <div className="form-row">
-      <div className="form-group">
-        <label htmlFor="firstName">First Name</label>
-        <input
-          type="text"
-          id="firstName"
-          name="firstName"
-          value={formData.firstName}
-          onChange={handleInputChange}
-          required
-          placeholder="First name"
-        />
-      </div>
-      <div className="form-group">
-        <label htmlFor="lastName">Last Name</label>
-        <input
-          type="text"
-          id="lastName"
-          name="lastName"
-          value={formData.lastName}
-          onChange={handleInputChange}
-          required
-          placeholder="Last name"
-        />
-      </div>
-    </div>
+    {/* First Name and Last Name in a row */}
+
     <div className="form-group">
-      <label htmlFor="username">Username</label>
+      <label htmlFor="fullName">Full Name</label>
       <input
         type="text"
-        id="username"
-        name="username"
-        value={formData.username}
+        id="fullName"
+        name="fullName"
+        value={formData.fullName}
         onChange={handleInputChange}
         required
-        placeholder="Choose a username"
+        placeholder="Enter your full name"
       />
     </div>
+    <div className="form-row">
+      <div className="form-group">
+        <label htmlFor="gender">Gender</label>
+        <input
+          id="gender"
+          name="gender"
+          value={formData.gender}
+          onChange={handleInputChange}
+          placeholder="Enter your gender"
+          required
+        />
+      </div>
+      <div className="form-group">
+        <label htmlFor="dateOfBirth">Date of Birth</label>
+        <input
+          type="date"
+          id="dateOfBirth"
+          name="dateOfBirth"
+          value={formData.dateOfBirth}
+          onChange={handleInputChange}
+          required
+        />
+      </div>
+    </div>
+
+    {/* National ID (new) */}
+    <div className="form-group">
+      <label htmlFor="nationalId">National ID</label>
+      <input
+        type="text"
+        id="nationalId"
+        name="nationalId"
+        value={formData.nationalId}
+        onChange={handleInputChange}
+        required
+        placeholder="Enter your national ID"
+      />
+    </div>
+
+    {/* Email */}
     <div className="form-group">
       <label htmlFor="email">Email</label>
       <input
-        type="email"
+        type="text"
         id="email"
         name="email"
         value={formData.email}
@@ -52,6 +69,36 @@ const Reg = ({formData ,handleSubmit, handleInputChange, isLoading, invalidSubmi
         placeholder="Enter your email"
       />
     </div>
+
+    {/* Phone Number (new) */}
+    <div className="form-group">
+      <label htmlFor="phoneNumber">Phone Number</label>
+      <input
+        type="tel"
+        id="phoneNumber"
+        name="phoneNumber"
+        value={formData.phoneNumber}
+        onChange={handleInputChange}
+        required
+        placeholder="Enter your phone number"
+      />
+    </div>
+
+    {/* Address (new) */}
+    <div className="form-group">
+      <label htmlFor="address">Address</label>
+      <input
+        type="text"
+        id="address"
+        name="address"
+        value={formData.address}
+        onChange={handleInputChange}
+        required
+        placeholder="Enter your address"
+      />
+    </div>
+
+    {/* Password */}
     <div className="form-group">
       <label htmlFor="password">Password</label>
       <input
@@ -64,6 +111,8 @@ const Reg = ({formData ,handleSubmit, handleInputChange, isLoading, invalidSubmi
         placeholder="Create a password"
       />
     </div>
+
+    {/* Confirm Password with validation */}
     <div className="form-group">
       <label htmlFor="confirmPassword">Confirm Password</label>
       <input
@@ -87,13 +136,14 @@ const Reg = ({formData ,handleSubmit, handleInputChange, isLoading, invalidSubmi
           <div className="error_message" style={{ color: "red" }}>
             Passwords do not match
           </div>
-      )}      
+      )}
       {invalidSubmit && (
         <div className="error-message" style={{ color: "red" }}>
-          Your email has been used by another user
+          {invalidSubmit}
         </div>
       )}
     </div>
+
     <AnimatedSubmitButton
       isLoading={isLoading}
       idleText="Create Account"

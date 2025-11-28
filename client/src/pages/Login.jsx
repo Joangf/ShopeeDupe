@@ -23,12 +23,14 @@ const Login = ({setIsLoggedIn}) => {
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
-    username: "",
-    password: "",
-    firstName: "",
-    lastName: "",
+    fullName: "",
+    gender: "",
+    dateOfBirth: "",
+    nationalId: "",
     email: "",
-    role: "USER",
+    phoneNumber: "",
+    address: "",
+    password: "",
     confirmPassword: "",
     otp: ''
   });
@@ -57,7 +59,9 @@ const handleSubmit = async (e) => {
         onSuccess(response);
       }
       else{
-        setInvalidSubmit(true);
+        const errorData = await response.json();
+        console.error("Error response:", errorData);
+        setInvalidSubmit(errorData.error || "Request failed");
       }
     } catch (error) {
       console.error("Request failed:", error);
@@ -73,20 +77,22 @@ const handleSubmit = async (e) => {
     }
     console.log("Register attempt:", registerData);
 
-    await doRequest("/user", registerData, () => {
-      setActiveTab("otp");
+    await doRequest("/auth/register/customer", registerData, () => {
+      setSubmitDone(true);  
+      setTimeout(() => setSubmitDone(false), 2000);
+      setActiveTab("login");
     });
 
   } else if (activeTab === "login") {
-    const loginData = {identifier: formData.email,password: formData.password,}
+    const loginData = {email: formData.email,password: formData.password,}
     console.log("Login attempt:", loginData);
 
-    await doRequest("/auth/login", loginData, async (response) => {
+    await doRequest("/auth/login/customer", loginData, async (response) => {
       const responseData = await response.json();
-      localStorage.setItem('authToken', responseData.result.token);
-      localStorage.setItem('idUser', responseData.result.id);
+      console.log("Login successful:", responseData);
+      localStorage.setItem('idUser', responseData.result.result);
       setIsLoggedIn(true);
-      sessionStorage.setItem('isLoggedIn', 'true');
+      localStorage.setItem('isLoggedIn', 'true');
       navigate("/");
     });
     

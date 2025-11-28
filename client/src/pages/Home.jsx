@@ -1,9 +1,9 @@
 import ProductGrid from "../components/Home/ProductGrid";
 import Navbar from "../components/Home/Navbar";
-const Home = () => {
+const Home = ({setIsLoggedIn, isLoggedIn}) => {
   return (
     <>
-      <Navbar />
+      <Navbar setIsLoggedIn={setIsLoggedIn} isLoggedIn={isLoggedIn} />
       <ProductGrid />
     </>
 )};

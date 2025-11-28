@@ -52,7 +52,7 @@ const StarRating = ({ rating }) => {
   );
 };
 
-const ProductDetailPage = () => {
+const ProductDetailPage = ({ isLoggedIn, setIsLoggedIn }) => {
   const { productId } = useParams();
   const navigate = useNavigate();
   const [quantity, setQuantity] = useState(1);
@@ -69,7 +69,7 @@ const ProductDetailPage = () => {
 
   return (
     <>
-      <Navbar />
+      <Navbar isLoggedIn={isLoggedIn} setIsLoggedIn={setIsLoggedIn} />
       <div className="product-page-container">
         <div className="product-content">
           <h1 className="product-page-title">Product Details</h1>
@@ -113,7 +113,7 @@ const ProductDetailPage = () => {
           <div className="product-feedback-section">
             <div className="feedback-header">
               <h2 className="feedback-title">Customer Reviews</h2>
-              <button className="secondary-btn">Write a Review</button>
+              <button className="secondary-btn-review">Write a Review</button>
             </div>
             <div className="feedback-list">
               {product.reviews.length > 0 ? (
