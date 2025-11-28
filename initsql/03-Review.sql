@@ -1,21 +1,3 @@
--- CREATE TABLE `Review` (
---   `ReviewID` int, -- Tự có --
---   `ProductID` int, -- Tự có --
---   `ReplyID` int, -- Tự có --
---   `CustomerName` nvarchar(255), -- Tự có --
---   `Title` nvarchar(255),
---   `Content` text,
---   `CreatedAt` datetime DEFAULT (now()), -- Tự có --
---   `CustomerID` int, -- Tự có --
---   PRIMARY KEY (`ReviewID`, `ProductID`) -- Tự có --
--- );
-
--- ALTER TABLE `Review` ADD FOREIGN KEY (`ProductID`) REFERENCES `Product` (`ProductID`);
-
--- ALTER TABLE `Review` ADD FOREIGN KEY (`ReplyID`) REFERENCES `Review` (`ProductID`);
-
--- ALTER TABLE `Review` ADD FOREIGN KEY (`CustomerID`) REFERENCES `Customer` (`CustomerID`);
-
 -- Thủ tục tạo Review mới
 DELIMITER //
 CREATE PROCEDURE CreateReview(
