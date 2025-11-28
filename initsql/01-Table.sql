@@ -211,13 +211,14 @@ CREATE TABLE `CustomerShipment` (
 );
 
 CREATE TABLE `ShoppingCart` (
-  `CartID` int PRIMARY KEY, -- Tự có --
+  `CartID` int PRIMARY KEY AUTO_INCREMENT, -- Tự có --
   `CustomerID` int -- Tự có --
 );
 
 CREATE TABLE `CartDetail` (
   `CartID` int, -- Tự có --
   `ProductID` int, -- Tự có --
+  `Quantity` int DEFAULT 1,
   PRIMARY KEY (`CartID`, `ProductID`) -- Tự có --
 );
 
