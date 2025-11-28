@@ -62,6 +62,17 @@ export const updateUserInfo = async (req, res) => {
   }
 };
 
+export const isSeller = async (req, res) => {
+  try {
+    const userId = req.params.id;
+    const sql = "SELECT UserID FROM User u JOIN Seller s ON u.UserID = s.SellerID WHERE u.UserID = ?";
+    const [rows] = await pool.query(sql, [userId]);
+    res.status(200).json({ isSeller: rows.length > 0 });
+  } catch (error) {
+    console.error("Unexpected error:", error);
+    res.status(500).json({ error: "Internal server errors" });
+  }
+};
 export const customerLogin = async (req, res) => {
   try {
     const { email, password } = req.body;
@@ -212,6 +223,22 @@ export const sellerRegister = async (req, res) => {
   }
 };
 
+export const sellerRegisterById = async (req, res) => {
+  // Implementation for seller registration by ID
+  const userId = req.params.id;
+  const { businessAddress, businessName } = req.body;
+  if (!businessAddress || !businessName) {
+    return res.status(400).json({ error: "Missing required fields" });
+  }
+  try {
+    const sql = 'INSERT INTO Seller (SellerID, Type, BusinessAddress, BusinessName) VALUES (?, ?, ?, ?)';
+    const [result] = await pool.query(sql, [userId, 'Personal', businessAddress, businessName]);
+    res.status(201).json({ message: "Seller registered successfully", data: result });
+  } catch (error) {
+    console.error("Unexpected error:", error);
+    res.status(500).json({ error: "Internal server errors" });
+  }
+};
 export const forgotPassword = async (req, res) => {
   const { email, phonenumber } = req.body;
 
