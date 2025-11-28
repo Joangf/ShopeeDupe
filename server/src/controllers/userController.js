@@ -8,6 +8,60 @@ const JWT_SECRET = process.env.JWT_SECRET || "shopeedupe";
 // Customer
 // ==============================================================================
 // Customer Login
+export const getUserInfo = async (req, res) => {
+  try {
+    const userId = req.params.id;
+    const sql = "SELECT * FROM `User` WHERE UserID = ?";
+    const [rows] = await pool.query(sql, [userId]);
+    if (rows.length === 0) {
+      return res.status(404).json({ error: "User not found" });
+    }
+    res.status(200).json({ result: rows[0] });
+  } catch (error) {
+    console.error("Unexpected error:", error);
+    res.status(500).json({ error: "Internal server errors" });
+  }
+};
+
+export const updateUserInfo = async (req, res) => {
+  try {
+    const userId = req.params.id;
+    const {
+      fullName,
+      gender,
+      dateOfBirth,
+      nationalId,
+      email,
+      phoneNumber,
+      address,
+    } = req.body;
+
+    const sql = `
+      UPDATE \`User\`
+      SET FullName = ?, Gender = ?, DateOfBirth = ?, NationalID = ?, Email = ?, PhoneNumber = ?, Address = ?
+      WHERE UserID = ?
+    `;
+    const [result] = await pool.query(sql, [
+      fullName,
+      gender,
+      dateOfBirth,
+      nationalId,
+      email,
+      phoneNumber,
+      address,
+      userId,
+    ]);
+
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ error: "User not found" });
+    }
+    res.status(200).json({ message: "User updated successfully" });
+  } catch (error) {
+    console.error("Unexpected error:", error);
+    res.status(500).json({ error: "Internal server errors" });
+  }
+};
+
 export const customerLogin = async (req, res) => {
   try {
     const { email, password } = req.body;
@@ -31,10 +85,26 @@ export const customerLogin = async (req, res) => {
 
 // Customer Register
 export const customerRegister = async (req, res) => {
+  const {
+    fullName,
+    gender,
+    dateOfBirth,
+    nationalId,
+    email,
+    phoneNumber,
+    address,
+    password,
+  } = req.body;
+
+  // Validate required fields
+  if (!fullName || !email || !password) {
+    return res.status(400).json({ error: "Missing required fields" });
+  }
+  const sql = "CALL sp_AddNewCustomer(?, ?, ?, ?, ?, ?, ?, ?)";
+
   try {
-    const {
-      firstName,
-      lastName,
+    const [result] = await pool.query(sql, [
+      fullName,
       gender,
       dateOfBirth,
       nationalId,
@@ -42,55 +112,24 @@ export const customerRegister = async (req, res) => {
       phoneNumber,
       address,
       password,
-    } = req.body;
+    ]);
 
-    // Validate required fields
-    if (!firstName || !lastName || !email || !password) {
-      return res.status(400).json({ error: "Missing required fields" });
+    return res.status(201).json({
+      message: "User created successfully",
+      data: result,
+    });
+  } catch (err) {
+    if (err.code === "ER_DUP_ENTRY") {
+      let field = "";
+
+      if (err.sqlMessage.includes("ux_user_email")) field = "Email";
+      else if (err.sqlMessage.includes("ux_user_phone")) field = "Phone number";
+      else if (err.sqlMessage.includes("ux_user_nationalid"))
+        field = "National ID";
+
+      return res.status(400).json({ error: `${field} already exists` });
     }
-
-    const fullName = `${firstName} ${lastName}`;
-
-    const sql = "CALL sp_AddNewCustomer(?, ?, ?, ?, ?, ?, ?, ?)";
-    const db = await pool.getConnection();
-
-    try {
-      const [result] = await db.query(sql, [
-        fullName,
-        gender,
-        dateOfBirth,
-        nationalId,
-        email,
-        phoneNumber,
-        address,
-        password,
-      ]);
-
-      return res.status(201).json({
-        message: "User created successfully",
-        data: result,
-      });
-    } catch (err) {
-      if (err.code === "ER_DUP_ENTRY") {
-        let field = "";
-
-        if (err.sqlMessage.includes("ux_user_email")) field = "Email";
-        else if (err.sqlMessage.includes("ux_user_phone"))
-          field = "Phone number";
-        else if (err.sqlMessage.includes("ux_user_nationalid"))
-          field = "National ID";
-
-        return res.status(400).json({ error: `${field} already exists` });
-      }
-
-      console.error("Error executing stored procedure:", err);
-      return res.status(500).json({ error: "Internal server error" });
-    } finally {
-      db.release();
-    }
-  } catch (error) {
-    console.error("Unexpected error:", error);
-    return res.status(500).json({ error: "Internal server err" });
+    return res.status(400).json({ error: err.sqlMessage });
   }
 };
 
@@ -124,8 +163,7 @@ export const sellerLogin = async (req, res) => {
 export const sellerRegister = async (req, res) => {
   try {
     const {
-      firstName,
-      lastName,
+      fullName,
       gender,
       dateOfBirth,
       nationalId,
@@ -137,21 +175,14 @@ export const sellerRegister = async (req, res) => {
       businessName,
     } = req.body;
 
-    if (
-      !firstName ||
-      !lastName ||
-      !email ||
-      !password ||
-      !nationalId ||
-      !phoneNumber
-    ) {
+    if (!fullName || !email || !password || !nationalId || !phoneNumber) {
       return res.status(400).json({ error: "Missing required fields" });
     }
 
     const [row] = await pool.query(
       "CALL sp_AddNewSeller(?, ?, ?, ?, ?, ?, ?, ?, ? ,?)",
       [
-        `${firstName} ${lastName}`,
+        fullName,
         gender,
         dateOfBirth,
         nationalId,
@@ -177,8 +208,7 @@ export const sellerRegister = async (req, res) => {
       return res.status(400).json({ error: `${field} already exists` });
     }
 
-    console.error("Unexpected error:", error);
-    res.status(500).json({ error: "Internal server errors" });
+    return res.status(400).json({ error: error.message });
   }
 };
 
