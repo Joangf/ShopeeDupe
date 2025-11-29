@@ -316,26 +316,24 @@ END;
 DELIMITER ;
 
 -- --------------------------------------------------------------------------------
--- Function 2: Find customer using email or password
+-- Procedure: Find customer using email
 -- --------------------------------------------------------------------------------
 DELIMITER //
-CREATE FUNCTION func_AuthenticateCustomer (
-    p_Email VARCHAR(255),
-    p_PasswordHash VARCHAR(255)
-)
-RETURNS INT READS SQL DATA
-BEGIN
-    DECLARE v_CustomerID INT;
 
-    SELECT C.CustomerID INTO v_CustomerID
+CREATE PROCEDURE proc_GetCustomerByEmail (
+    IN p_Email VARCHAR(255)
+)
+BEGIN
+    -- Chỉ select theo Email, KHÔNG check password ở đây
+    SELECT 
+        C.CustomerID,
+        U.Email,
+        U.PasswordHash,
+        U.FullName -- Lấy thêm tên nếu cần
     FROM Customer C
     JOIN `User` U ON C.CustomerID = U.UserID
     WHERE U.Email = p_Email
-        AND U.PasswordHash = p_PasswordHash
     LIMIT 1;
-
-    RETURN v_CustomerID;
 END;
 //
-
 DELIMITER ;

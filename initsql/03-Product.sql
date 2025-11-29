@@ -60,11 +60,12 @@ CREATE PROCEDURE sp_AddNewProduct (
     IN p_BrandName NVARCHAR(100), -- Tên thương hiệu
     IN p_Description TEXT,  -- Mô tả sản phẩm
     IN p_Price INT, -- Giá sản phẩm (không được giá âm)
-    IN p_StockQuantity INT  -- (Số lượng tồn kho (không được âm hay không có gì))
+    IN p_StockQuantity INT,  -- (Số lượng tồn kho (không được âm hay không có gì))
+    IN p_ImageURL VARCHAR(255) -- URL hình ảnh sản phẩm
 )
 BEGIN
-    INSERT INTO Product (SellerID, Name, Barcode, BrandName, Description, Price, StockQuantity)
-    VALUES (p_SellerID, p_Name, p_Barcode, p_BrandName, p_Description, p_Price, p_StockQuantity);
+    INSERT INTO Product (SellerID, Name, Barcode, BrandName, Description, Price, StockQuantity, ImageURL)
+    VALUES (p_SellerID, p_Name, p_Barcode, p_BrandName, p_Description, p_Price, p_StockQuantity, p_ImageURL);
 END //
 DELIMITER //
 

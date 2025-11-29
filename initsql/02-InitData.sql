@@ -7,8 +7,8 @@ VALUES
 (5, 'Hoang Van E', 'Male', '1998-04-04', 'ID005', 'e@gmail.com', '0900000005', 'HCM', 'hash5'),
 (6, 'N N N', 'Male', '2005-04-27', 'ID006', 'nnn@gmail.com', '0900000006', 'HCM', 'hash6'),
 (7, 'Ngoc Ngu', 'Male', '2005-07-27', 'ID007', 'nnn27@gmail.com', '0900000007', 'HCM', 'hash7'),
-(8, 'Nhat Ha', 'Female', '2005-08-01', 'ID008', 'nnh@gmail.com', '0900000008', 'HCM', 'hash8');
-
+(8, 'Nhat Ha', 'Female', '2005-08-01', 'ID008', 'nnh@gmail.com', '0900000008', 'HCM', 'hash8')
+(9, 'Nguyễn Văn An', 'Nam', '1998-05-20', '079098000123', 'mth353214@gmail.com', '0987654321', '123 Đường Lê Lợi, Phường Bến Nghé, Quận 1, TP.HCM', '$2b$10$eWj.0dpB8wwVY/vMUVGPU.wZFrUhUDaA.rMRpwaJLe8UNXZpaCC/W');
 
 INSERT INTO Customer (CustomerID, Type, Behaviour)
 VALUES

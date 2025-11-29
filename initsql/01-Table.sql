@@ -84,7 +84,7 @@ CREATE TABLE `PackageItem` (
 -- ALTER TABLE PackageItem RENAME INDEX `PackageItemID` TO `ux_packageitem_packageitemid`;
 
 CREATE TABLE `Product` (
-  `SellerID` int,
+  `SellerID` int NOT NULL,
   `ProductID` int PRIMARY KEY AUTO_INCREMENT, -- Tự có --
   `VoucherID` int DEFAULT NULL, -- Thêm sau --
   `Name` nvarchar(255) NOT NULL,
@@ -92,10 +92,11 @@ CREATE TABLE `Product` (
   `BrandName` nvarchar(100),
   `Status` varchar(50) NOT NULL DEFAULT 'Active' COMMENT 'e.g., Active, Inactive, Discontinued', -- Tự có --
   `Description` text,
-  `Price` int,
+  `Price` int NOT NULL,
   `DiscountPrice` int DEFAULT NULL, -- COMMENT 'Thêm sau' --,
   `ApprovalInfo` nvarchar(255) DEFAULT NULL, -- COMMENT 'Thêm sau' --,
-  `StockQuantity` int
+  `StockQuantity` int NOT NULL,
+  `ImageURL` varchar(255)
 );
 
 CREATE TABLE `Review` (
@@ -109,9 +110,6 @@ CREATE TABLE `Review` (
   `CustomerID` int, -- Tự có --
   PRIMARY KEY (`ReviewID`, `ProductID`) -- Tự có --
 );
-ALTER TABLE `Review` RENAME INDEX `ProductID` TO `ux_review_productid`;
-ALTER TABLE `Review` RENAME INDEX `ReplyID` TO `ux_review_replyid`;
-ALTER TABLE `Review` RENAME INDEX `CustomerID` TO `ux_review_customerid`;
 
 CREATE TABLE `Warehouse` (
   `WarehouseID` int PRIMARY KEY AUTO_INCREMENT, -- Tự có --

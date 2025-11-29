@@ -75,23 +75,20 @@ DELIMITER ;
 
 -- function authenticate seller
 DELIMITER //
-CREATE FUNCTION func_AuthenticateSeller (
-    p_Email VARCHAR(255),
-    p_PasswordHash VARCHAR(255)
+
+CREATE PROCEDURE proc_GetSellerByEmail (
+    IN p_Email VARCHAR(255)
 )
-RETURNS INT READS SQL DATA
 BEGIN
-    DECLARE v_Seller INT;
-
-    SELECT S.SellerID INTO v_Seller
-    FROM Seller S
-    JOIN `User` U ON S.SellerID = U.UserID
+    SELECT 
+        C.SellerID,
+        U.Email,
+        U.PasswordHash,
+        U.FullName -- Lấy thêm tên nếu cần
+    FROM Seller C
+    JOIN `User` U ON C.SellerID = U.UserID
     WHERE U.Email = p_Email
-        AND U.PasswordHash = p_PasswordHash
     LIMIT 1;
-
-    RETURN v_Seller;
 END;
 //
-
 DELIMITER ;
