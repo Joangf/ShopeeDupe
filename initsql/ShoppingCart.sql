@@ -79,8 +79,6 @@ BEGIN
 END //
 DELIMITER ;
 
-DROP PROCEDURE IF EXISTS `sp_RemoveFromCart`;
-
 DELIMITER //
 
 CREATE PROCEDURE `sp_RemoveFromCart`(
