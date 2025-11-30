@@ -75,19 +75,40 @@ export const isSeller = async (req, res) => {
 };
 export const customerLogin = async (req, res) => {
   try {
-    const { email, password } = req.body;
-    if (!email || !password) {
-      return res.status(400).json({ error: "Missing email or password" });
+    const {
+      userId,
+      email,
+      phoneNumber,
+      password
+    } = req.body;
+    if (!password) {
+      return res.status(400).json({ error: "Missing password" });
+    }
+    await pool.query("SET @success = NULL;");
+    await pool.query("SET @returnedUserID = NULL;");
+    await pool.query("SET @reason = NULL;");
+
+    await pool.query(
+      "CALL sp_Login(?, ?, ?, ?, @success, @returnedUserID, @reason)",
+      [userId, email, phoneNumber, password]
+    );
+
+    const [outRows] = await pool.query(
+      "SELECT @success AS success, @returnedUserID AS returnedUserID, @reason AS reason"
+    );
+
+    const out = outRows[0];
+
+    if (out.success != 1) {
+      return res
+        .status(401)
+        .json({ error: out.reason || "Invalid email or password" });
     }
 
-    const sql = "SELECT func_AuthenticateCustomer(?, ?) AS result";
-
-    const [row] = await pool.query(sql, [email, password]);
-    if (!row[0].result) {
-      return res.status(401).json({ error: "Invalid email or password" });
-    }
-
-    res.status(200).json({ message: "Login successful", result: row[0] });
+    return res.status(200).json({
+      message: "Login successful",
+      userId: out.returnedUserID,
+    });
   } catch (error) {
     console.error("Unexpected error:", error);
     res.status(500).json({ error: "Internal server errors" });
@@ -114,7 +135,7 @@ export const customerRegister = async (req, res) => {
   const sql = "CALL sp_AddNewCustomer(?, ?, ?, ?, ?, ?, ?, ?)";
 
   try {
-    const [result] = await pool.query(sql, [
+    const [row] = await pool.query(sql, [
       fullName,
       gender,
       dateOfBirth,
@@ -127,7 +148,7 @@ export const customerRegister = async (req, res) => {
 
     return res.status(201).json({
       message: "User created successfully",
-      data: result,
+      data: row[0][0],
     });
   } catch (err) {
     if (err.code === "ER_DUP_ENTRY") {
@@ -150,20 +171,42 @@ export const customerRegister = async (req, res) => {
 // Seller Login
 export const sellerLogin = async (req, res) => {
   try {
-    const { email, password } = req.body;
-    console.log(email, password);
-    if (!email || !password) {
-      return res.status(400).json({ error: "Missing email or password" });
+    const { userId, email, phoneNumber, password } = req.body;
+    if (!password) {
+      return res.status(400).json({ error: "Missing password" });
     }
-    const [row] = await pool.query(
-      "SELECT func_AuthenticateSeller(?, ?) AS result",
-      [email, password]
+    await pool.query("SET @success = NULL;");
+    await pool.query("SET @returnedUserID = NULL;");
+    await pool.query("SET @reason = NULL;");
+
+    await pool.query(
+      "CALL sp_Login(?, ?, ?, ?, @success, @returnedUserID, @reason)",
+      [userId, email, phoneNumber, password]
     );
-    if (!row[0].result) {
-      return res.status(401).json({ error: "Invalid email or password" });
+
+    const [outRows] = await pool.query(
+      "SELECT @success AS success, @returnedUserID AS returnedUserID, @reason AS reason"
+    );
+
+    const out = outRows[0];
+
+    if (out.success != 1) {
+      return res
+        .status(401)
+        .json({ error: out.reason || "Invalid email or password" });
     }
 
-    res.status(200).json({ message: "Login successful", result: row[0] });
+    const [check] = await pool.query(
+      "SELECT EXISTS (SELECT 1 FROM Seller WHERE SellerID = ?) AS isExists",
+      [out.returnedUserID]
+    );
+    if (!check[0].isExists) {
+      return res.status(401).json({ error: out.reason || "No exist this seller" });
+    }
+    return res.status(200).json({
+      message: "Login successful",
+      userId: out.returnedUserID,
+    });
   } catch (error) {
     console.error("Unexpected error:", error);
     res.status(500).json({ error: "Internal server errors" });
@@ -205,7 +248,7 @@ export const sellerRegister = async (req, res) => {
         businessName,
       ]
     );
-    res.status(201).json({ message: "Seller created successfully", data: row });
+    res.status(201).json({ message: "Seller created successfully", data: row[0][0] });
   } catch (error) {
     if (error.code === "ER_DUP_ENTRY") {
       let field = "";
