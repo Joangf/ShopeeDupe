@@ -49,7 +49,7 @@ CREATE TABLE `Shipper` (
 );
 
 CREATE TABLE `Order` (
-  `OrderID` int PRIMARY KEY, -- Tự có --
+  `OrderID` int PRIMARY KEY AUTO_INCREMENT, -- Tự có --
   `CustomerID` int NOT NULL, -- Tự có --
   `OrderDate` datetime NOT NULL DEFAULT (now()), -- Tự có --
   `Status` varchar(50) NOT NULL DEFAULT 'Pending', -- Tự có --
@@ -212,7 +212,7 @@ CREATE TABLE `CustomerShipment` (
 );
 
 CREATE TABLE `ShoppingCart` (
-  `CartID` int PRIMARY KEY, -- Tự có --
+  `CartID` int PRIMARY KEY AUTO_INCREMENT, -- Tự có --
   `CustomerID` int -- Tự có --
 );
 
