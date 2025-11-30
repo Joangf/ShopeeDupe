@@ -124,6 +124,106 @@ END //
 
 DELIMITER ;
 
+-- Tạo ra Order từ dữ liệu ShoppingCart (xóa sạch giỏ hàng sau khi order đc tạo thành công) và lựa chọn cách thanh toán của người dùng
+
+CREATE PROCEDURE sp_Checkout(
+    IN p_UserID INT,
+    IN p_ShippingAddress NVARCHAR(255),
+    IN p_PaymentMethod NVARCHAR(50)
+)
+BEGIN
+    DECLARE v_CartID INT;
+    DECLARE v_TotalAmount DECIMAL(15,2) DEFAULT 0;
+    DECLARE v_OrderID INT;
+    DECLARE v_PackageID INT;
+    DECLARE v_ItemCount INT;
+    
+    -- Xử lý lỗi: Nếu có lỗi SQL bất kỳ, Rollback toàn bộ
+    DECLARE EXIT HANDLER FOR SQLEXCEPTION
+    BEGIN
+        ROLLBACK;
+        RESIGNAL; -- Báo lại lỗi ra ngoài
+    END;
+
+    -- BẮT ĐẦU TRANSACTION
+    START TRANSACTION;
+
+    -- 1. Lấy CartID
+    SELECT CartID INTO v_CartID FROM ShoppingCart WHERE CustomerID = p_UserID LIMIT 1;
+
+    -- Check: Có giỏ hàng không?
+    IF v_CartID IS NULL THEN
+        SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Lỗi: Khách hàng chưa có giỏ hàng.';
+    END IF;
+
+    -- Check: Giỏ hàng có rỗng không?
+    SELECT COUNT(*) INTO v_ItemCount FROM CartDetail WHERE CartID = v_CartID;
+    IF v_ItemCount = 0 THEN
+        SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Lỗi: Giỏ hàng đang trống, không thể thanh toán.';
+    END IF;
+
+    -- 2. Kiểm tra tồn kho (Stock Check)
+    -- Nếu có bất kỳ sản phẩm nào mua nhiều hơn tồn kho -> Báo lỗi ngay
+    IF EXISTS (
+        SELECT 1
+        FROM CartDetail cd
+        JOIN Product p ON cd.ProductID = p.ProductID
+        WHERE cd.CartID = v_CartID
+        AND cd.Quantity > p.StockQuantity
+    ) THEN
+        SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Lỗi: Một số sản phẩm trong giỏ đã hết hàng hoặc không đủ số lượng.';
+    END IF;
+
+    -- 3. Tính tổng tiền (Ưu tiên dùng DiscountPrice nếu có)
+    -- Logic: Nếu DiscountPrice > 0 thì lấy, ngược lại lấy Price
+    SELECT SUM(cd.Quantity * COALESCE(NULLIF(p.DiscountPrice, 0), p.Price)) 
+    INTO v_TotalAmount
+    FROM CartDetail cd
+    JOIN Product p ON cd.ProductID = p.ProductID
+    WHERE cd.CartID = v_CartID;
+
+    -- 4. Tạo Đơn Hàng (Order)
+    INSERT INTO `Order` (CustomerID, OrderDate, Status, TotalAmount, ShippingAddress, PaymentMethod)
+    VALUES (p_UserID, NOW(), 'Pending', v_TotalAmount, p_ShippingAddress, p_PaymentMethod);
+    
+    SET v_OrderID = LAST_INSERT_ID(); -- Lấy ID vừa tạo
+
+    -- 5. Tạo Gói Hàng (Package)
+    -- Mặc định tạo 1 gói hàng cho đơn này, Status là 'Processing'
+    INSERT INTO `Package` (OrderID, WarehouseID, PackagedAt, Status, Quantity)
+    VALUES (v_OrderID, NULL, NOW(), 'Processing', v_ItemCount); -- WarehouseID để NULL, Thủ kho sẽ set sau
+    
+    SET v_PackageID = LAST_INSERT_ID();
+
+    -- 6. Chuyển dữ liệu từ CartDetail -> PackageItem
+    INSERT INTO PackageItem (ProductID, PackageID, PackageItemID, Quantity)
+    SELECT 
+        cd.ProductID, 
+        v_PackageID, 
+        ROW_NUMBER() OVER (ORDER BY cd.ProductID), -- Tự sinh ID dòng item (1, 2, 3...)
+        cd.Quantity
+    FROM CartDetail cd
+    WHERE cd.CartID = v_CartID;
+
+    -- 7. Trừ tồn kho (Update Stock)
+    UPDATE Product p
+    JOIN CartDetail cd ON p.ProductID = cd.ProductID
+    SET p.StockQuantity = p.StockQuantity - cd.Quantity
+    WHERE cd.CartID = v_CartID;
+
+    -- 8. Xóa sạch giỏ hàng (Chỉ xóa detail, giữ lại vỏ Cart hoặc xóa cả tùy logic, ở đây xóa detail)
+    DELETE FROM CartDetail WHERE CartID = v_CartID;
+
+    -- COMMIT TRANSACTION
+    COMMIT;
+
+    -- Trả về thông tin đơn hàng vừa tạo
+    SELECT v_OrderID AS OrderID, v_TotalAmount AS Total, 'Order created successfully' AS Message;
+
+END //
+
+DELIMITER ;
+
 
 -- data
 
@@ -170,5 +270,56 @@ DELIMITER ;
 -- JOIN Product p ON cd.ProductID = p.ProductID
 -- WHERE u.UserID IN (1, 6);
 
+-- ===================================
+-- Test for checkout
+-- ===================================
+-- --- BƯỚC 1: CHUẨN BỊ DỮ LIỆU ---
 
--- SELECT * from CartDetail
+-- 1. Tạo User & Customer
+-- INSERT INTO `User` (FullName, Email) VALUES ('Khach Mua Hang', 'buyer@test.com');
+-- SET @UID = LAST_INSERT_ID();
+-- INSERT INTO `Customer` (CustomerID, Type) VALUES (@UID, 'VIP');
+
+-- -- 2. Tạo Sản phẩm (SellerID = 3 giả định đã có)
+-- -- Laptop: Giá 10tr, Tồn kho 5 cái
+-- INSERT INTO Product (SellerID, Name, Price, DiscountPrice, StockQuantity) 
+-- VALUES (3, 'Laptop Gaming', 10000000, NULL, 5);
+-- SET @PID1 = LAST_INSERT_ID();
+
+-- -- Chuột: Giá 200k, Giảm còn 150k, Tồn kho 10 cái
+-- INSERT INTO Product (SellerID, Name, Price, DiscountPrice, StockQuantity) 
+-- VALUES (3, 'Mouse RGB', 200000, 150000, 10);
+-- SET @PID2 = LAST_INSERT_ID();
+
+-- -- 3. Thêm vào giỏ hàng (Dùng Procedure sp_AddToCart đã viết trước đó)
+-- CALL sp_AddToCart(@UID, @PID1, 1); -- Mua 1 Laptop
+-- CALL sp_AddToCart(@UID, @PID2, 2); -- Mua 2 Chuột
+
+-- -- Kiểm tra giỏ hàng trước khi thanh toán
+-- SELECT * FROM CartDetail WHERE CartID = (SELECT CartID FROM ShoppingCart WHERE CustomerID = @UID);
+
+
+-- --- BƯỚC 2: CHẠY THANH TOÁN (CHECKOUT) ---
+
+-- Gọi lệnh tạo đơn hàng
+-- Địa chỉ: '123 Đường ABC', Thanh toán: 'COD'
+-- CALL sp_Checkout(@UID, '123 Đường ABC', 'COD');
+
+
+-- --- BƯỚC 3: KIỂM TRA KẾT QUẢ SAU KHI CHẠY ---
+
+-- 1. Kiểm tra bảng Order (Phải có 1 dòng mới, TotalAmount = 1*10tr + 2*150k = 10.300.000)
+-- SELECT * FROM `Order` WHERE CustomerID = @UID;
+
+-- 2. Kiểm tra bảng Package & PackageItem (Hàng đã vào gói chưa?)
+-- SELECT p.PackageID, p.Status, pi.ProductID, pi.Quantity 
+-- FROM `Package` p
+-- JOIN PackageItem pi ON p.PackageID = pi.PackageID
+-- JOIN `Order` o ON p.OrderID = o.OrderID
+-- WHERE o.CustomerID = @UID;
+
+-- -- 3. Kiểm tra Tồn kho (Laptop phải còn 4, Chuột phải còn 8)
+-- SELECT Name, StockQuantity FROM Product WHERE ProductID IN (@PID1, @PID2);
+
+-- -- 4. Kiểm tra Giỏ hàng (Phải trống rỗng)
+-- SELECT * FROM CartDetail WHERE CartID = (SELECT CartID FROM ShoppingCart WHERE CustomerID = @UID);
