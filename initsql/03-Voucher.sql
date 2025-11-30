@@ -171,7 +171,7 @@ DELIMITER ;
 
 DELIMITER //
 
-
+-- List customer dùng voucher >= p_min_usage trong khoảng thời gian ... và ngày cuối sử dụng
 CREATE PROCEDURE sp_ReportVoucherUsage(
     IN p_start_date DATE,
     IN p_end_date DATE,
