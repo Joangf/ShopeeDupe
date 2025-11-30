@@ -66,6 +66,8 @@ CREATE PROCEDURE sp_AddNewProduct (
 BEGIN
     INSERT INTO Product (SellerID, Name, Barcode, BrandName, Description, Price, StockQuantity, ImageURL)
     VALUES (p_SellerID, p_Name, p_Barcode, p_BrandName, p_Description, p_Price, p_StockQuantity, p_ImageURL);
+
+    SELECT LAST_INSERT_ID() AS ProductID;
 END //
 DELIMITER //
 
