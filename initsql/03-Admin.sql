@@ -1,6 +1,4 @@
 -- admin
-DROP PROCEDURE IF EXISTS sp_AdminUpdateOrderStatus;
-DELIMITER //
 -- procedure update status don hang 
 DROP PROCEDURE IF EXISTS sp_AdminUpdateOrderStatus;
 DELIMITER //
