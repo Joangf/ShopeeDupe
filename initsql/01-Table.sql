@@ -100,7 +100,7 @@ CREATE TABLE `Product` (
 );
 
 CREATE TABLE `Review` (
-  `ReviewID` int,
+  `ReviewID` int AUTO_INCREMENT,
   `ProductID` int, -- Tự có --
   `ReplyID` int, -- Tự có --
   `CustomerName` nvarchar(255), -- Tự có --
