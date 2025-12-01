@@ -11,12 +11,7 @@ import {
   updateUserInfo,
   sellerRegisterById,
   isSeller,
-  getProfile,
 } from "../controllers/userController.js";
-import {
-  addNewProduct
-} from "../controllers/sellerController.js"
-import { authAdmin } from '../middleware/authUser.js';
 const userRoute = express.Router();
 
 // ============================================================
@@ -40,6 +35,5 @@ userRoute.post("/auth/login/seller", sellerLogin);
 userRoute.post("/auth/register/seller", sellerRegister);
 userRoute.post("/auth/register/seller/:id", sellerRegisterById)
 
-userRoute.post("/seller/product/add", addNewProduct)
 
 export default userRoute;
