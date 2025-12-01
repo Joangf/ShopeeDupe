@@ -65,9 +65,9 @@ export const updateUserInfo = async (req, res) => {
 export const isSeller = async (req, res) => {
   try {
     const userId = req.params.id;
-    const sql = "SELECT UserID FROM User u JOIN Seller s ON u.UserID = s.SellerID WHERE u.UserID = ?";
+    const sql = "SELECT UserID, BusinessName, BusinessAddress FROM User u JOIN Seller s ON u.UserID = s.SellerID WHERE u.UserID = ?";
     const [rows] = await pool.query(sql, [userId]);
-    res.status(200).json({ isSeller: rows.length > 0 });
+    res.status(200).json({ isSeller: rows.length > 0, businessName: rows[0]?.BusinessName || null, businessAddress: rows[0]?.BusinessAddress || null });
   } catch (error) {
     console.error("Unexpected error:", error);
     res.status(500).json({ error: "Internal server errors" });
@@ -145,7 +145,6 @@ export const customerRegister = async (req, res) => {
       address,
       password,
     ]);
-    console.log(row);
     return res.status(200).json({
       message: "User created successfully"
     });
