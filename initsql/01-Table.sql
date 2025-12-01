@@ -219,6 +219,7 @@ CREATE TABLE `ShoppingCart` (
 CREATE TABLE `CartDetail` (
   `CartID` int, -- Tự có --
   `ProductID` int, -- Tự có --
+  `Quantity` int DEFAULT 1,
   PRIMARY KEY (`CartID`, `ProductID`) -- Tự có --
 );
 
