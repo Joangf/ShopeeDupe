@@ -10,7 +10,8 @@ import {
   getUserInfo,
   updateUserInfo,
   sellerRegisterById,
-  isSeller
+  isSeller,
+  getProfile,
 } from "../controllers/userController.js";
 import {
   addNewProduct
@@ -32,7 +33,6 @@ userRoute.post("/auth/login/customer", customerLogin);
 userRoute.post("/auth/forgot-password", forgotPassword);
 userRoute.post("/verify/email", verifyEmail);
 userRoute.post("/auth/reset-password", resetPassword);
-
 // ============================================================
 // Seller Routes
 // ============================================================

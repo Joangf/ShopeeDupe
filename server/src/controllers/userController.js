@@ -145,10 +145,9 @@ export const customerRegister = async (req, res) => {
       address,
       password,
     ]);
-
-    return res.status(201).json({
-      message: "User created successfully",
-      data: row[0][0],
+    console.log(row);
+    return res.status(200).json({
+      message: "User created successfully"
     });
   } catch (err) {
     if (err.code === "ER_DUP_ENTRY") {
@@ -248,7 +247,7 @@ export const sellerRegister = async (req, res) => {
         businessName,
       ]
     );
-    res.status(201).json({ message: "Seller created successfully", data: row[0][0] });
+    res.status(200).json({ message: "Seller created successfully"});
   } catch (error) {
     if (error.code === "ER_DUP_ENTRY") {
       let field = "";
