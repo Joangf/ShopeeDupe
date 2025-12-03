@@ -21,6 +21,7 @@ const UserProfilePage = ({ isLoggedIn, setIsLoggedIn }) => {
     address: "",
   });
   const [activeTab, setActiveTab] = useState("profile");
+  const [sellerData, setSellerData] = useState({});
   const handleInputChange = (e) => {
     setFormData({
       ...formData,
@@ -38,7 +39,6 @@ const UserProfilePage = ({ isLoggedIn, setIsLoggedIn }) => {
         },
       });
       const data = await response.json();
-      console.log(data);
       setFormData({
         fullName: data.result.FullName || "",
         gender: data.result.Gender || "",
@@ -52,8 +52,23 @@ const UserProfilePage = ({ isLoggedIn, setIsLoggedIn }) => {
       console.error("Error fetching user data:", error);
     }
   };
+  const fetchSellerStatus = async () => {
+    try {
+      const response = await fetch(`${API_URL}/user/role/${id}`, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+      const data = await response.json();
+      setSellerData(data);
+    } catch (error) {
+      console.error("Error fetching seller status:", error);
+    }
+  };
   useEffect(() => {
     fetchUserData();
+    fetchSellerStatus();
   }, []);
 
   const handleSubmit = async (e) => {
@@ -191,6 +206,7 @@ const UserProfilePage = ({ isLoggedIn, setIsLoggedIn }) => {
             </div>
             <div className="user-details">
               <h3 className="user-name">{formData.fullName}</h3>
+              <p className="user-subtitle">{sellerData ? "Seller" : "Buyer"}</p>
             </div>
           </div>
 
@@ -211,7 +227,7 @@ const UserProfilePage = ({ isLoggedIn, setIsLoggedIn }) => {
         </aside>
 
         {/* Main Content */}
-        {activeTab === "seller" && <SellerCenter formData={formData} setFormData={setFormData} />}
+        {activeTab === "seller" && <SellerCenter sellerData={sellerData} setSellerData={setSellerData} />}
         {activeTab === "profile" && <Profile formData={formData} handleInputChange={handleInputChange} handleSubmit={handleSubmit} setActiveDelete={setActiveDelete}/>}
       </div>
     </div>

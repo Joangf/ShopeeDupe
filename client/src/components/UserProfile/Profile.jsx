@@ -6,6 +6,7 @@ const Profile = ({
   handleSubmit,
   setActiveDelete,
 }) => {
+  
   return (
     <main className="profile-main">
       <div className="profile-header">

@@ -1,63 +1,32 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import './ProductDetailPage.css';
 import Navbar from '../components/Home/Navbar';
-const dummyReviews = [
-  { id: 1, author: 'Jane D.', rating: 5, title: 'Excellent Shirt!', text: 'Fits perfectly and the cotton is incredibly soft. Highly recommend.', date: 'November 10, 2025' },
-  { id: 2, author: 'Mark T.', rating: 4, title: 'Good, but not perfect', text: 'Nice shirt, but it shrank a little after the first wash. Still, good quality for the price.', date: 'November 5, 2025' }
-];
+import TickingFail from '../components/Notifications/TickingFail';
 
-const dummyProduct = {
-  id: '1',
-  name: 'Modern E-Commerce T-Shirt',
-  price: 29.99,
-  description: 'A perfect t-shirt to build your e-commerce empire in. Made from 100% premium, soft-touch cotton, this shirt offers both comfort and style. Features a minimalist logo and a modern, tapered fit.',
-  defaultImage: 'https://via.placeholder.com/600/F5F5F5/333333?text=Main+Image',
-  imageGallery: [
-    'https://via.placeholder.com/600/F5F5F5/333333?text=Main+Image',
-    'https://via.placeholder.com/600/F5F5F5/333333?text=Angle+1',
-    'https://via.placeholder.com/600/F5F5F5/333333?text=Angle+2',
-    'https://via.placeholder.com/600/F5F5F5/333333?text=Detail',
-  ],
-  reviews: dummyReviews
-};
-// --------------------
+const API_URL = import.meta.env.VITE_BACKEND_URL;
 
 // Helper to format price
 const formatPrice = (price) => {
-  return new Intl.NumberFormat('en-US', {
+  return new Intl.NumberFormat('vi-VN', {
     style: 'currency',
-    currency: 'USD',
+    currency: 'VND',
   }).format(price);
-};
-
-// --- NEW: Star Rating Component ---
-const StarRating = ({ rating }) => {
-  const totalStars = 5;
-  return (
-    <div className="star-rating">
-      {[...Array(totalStars)].map((_, i) => (
-        <svg
-          key={i}
-          width="18"
-          height="18"
-          viewBox="0 0 24 24"
-          fill={i < rating ? '#FFD700' : '#E0E0E0'} // Gold for full, gray for empty
-          xmlns="http://www.w3.org/2000/svg"
-        >
-          <path d="M12 17.27L18.18 21L16.54 13.97L22 9.24L14.81 8.63L12 2L9.19 8.63L2 9.24L7.46 13.97L5.82 21L12 17.27Z" />
-        </svg>
-      ))}
-    </div>
-  );
 };
 
 const ProductDetailPage = ({ isLoggedIn, setIsLoggedIn }) => {
   const { productId } = useParams();
   const navigate = useNavigate();
+  
+  // Product Data States
   const [quantity, setQuantity] = useState(1);
-  const [product, setProduct] = useState(dummyProduct);
-  const [currentImage, setCurrentImage] = useState(product.defaultImage);
+  const [product, setProduct] = useState({});
+  const [reviews, setReviews] = useState([]);
+  
+  // Review Form States
+  const [loginToReview, setLoginToReview] = useState(false);
+  const [reviewTitle, setReviewTitle] = useState('');
+  const [reviewContent, setReviewContent] = useState('');
 
   const handleQuantityChange = (amount) => {
     setQuantity(prev => Math.max(1, prev + amount));
@@ -67,8 +36,78 @@ const ProductDetailPage = ({ isLoggedIn, setIsLoggedIn }) => {
     console.log(`Added ${quantity} of ${product.name} to cart.`);
   };
 
+  const handleReviewSubmit = async (e) => {
+    e.preventDefault();
+
+    if (!isLoggedIn) {
+      setLoginToReview(true);
+      setTimeout(() => navigate('/login'), 2000);
+      return;
+    }
+
+
+    const reviewData = {
+      id: productId,
+      customerName: localStorage.getItem('nameUser'),
+      title: reviewTitle,
+      content: reviewContent,
+      customerId: localStorage.getItem('idUser'),
+    };
+    try {
+      const response = await fetch(`${API_URL}/products/${productId}/reviews`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(reviewData),
+      });
+      if (response.ok) {
+        window.location.reload();
+      } else {
+        console.error('Failed to submit review');
+      }
+    } catch (error) {
+      console.error('Error submitting review:', error);
+    }
+
+    setReviewTitle('');
+    setReviewContent('');
+  };
+
+  useEffect(() => {
+    const fetchProductDetails = async () => {
+      try {
+        const response = await fetch(`${API_URL}/products/${productId}`);
+        if (response.ok) {
+          const data = await response.json();
+          setProduct(data.product);
+        } else {
+          console.error('Failed to fetch product details');
+        }
+      } catch (error) {
+        console.error('Error fetching product details:', error);
+      }
+    };
+
+    const fetchProductReviews = async () => {
+      try {
+        const response = await fetch(`${API_URL}/products/${productId}/reviews`);
+        if (response.ok) {
+          const data = await response.json();
+          setReviews(data.reviews);
+        }
+      } catch (error) {
+        console.error('Error fetching product reviews:', error);
+      }
+    };
+
+    fetchProductDetails();
+    fetchProductReviews();
+  }, [productId]);
+
   return (
     <>
+      {loginToReview && !isLoggedIn && <TickingFail message="Please log in to submit a review." isVisible={true} />}
       <Navbar isLoggedIn={isLoggedIn} setIsLoggedIn={setIsLoggedIn} />
       <div className="product-page-container">
         <div className="product-content">
@@ -76,25 +115,14 @@ const ProductDetailPage = ({ isLoggedIn, setIsLoggedIn }) => {
           <div className="product-detail-layout">
             {/* --- Image Column --- */}
             <div className="product-image-section">
-              <img src={currentImage} alt={product.name} className="main-product-image" />
-              <div className="image-gallery">
-                {product.imageGallery.map((imgUrl, index) => (
-                  <button
-                    key={index}
-                    className={`gallery-thumbnail ${imgUrl === currentImage ? 'active' : ''}`}
-                    onClick={() => setCurrentImage(imgUrl)}
-                  >
-                    <img src={imgUrl} alt={`${product.name} thumbnail ${index + 1}`} />
-                  </button>
-                ))}
-              </div>
+              <img src={product.ImageURL} alt={product.Name} className="main-product-image" />
             </div>
 
             {/* --- Info Column --- */}
             <div className="product-info-section">
-              <h1 className="product-title">{product.name}</h1>
-              <span className="product-price">{formatPrice(product.price)}</span>
-              <p className="product-description">{product.description}</p>
+              <h1 className="product-title">{product.Name}</h1>
+              <span className="product-price">{product.Price ? formatPrice(product.Price) : ''}</span>
+              <p className="product-description">{product.Description}</p>
 
               <div className="product-actions">
                 <div className="quantity-selector">
@@ -109,29 +137,62 @@ const ProductDetailPage = ({ isLoggedIn, setIsLoggedIn }) => {
             </div>
           </div>
 
-          {/* --- NEW: Feedback Section --- */}
+          {/* --- Feedback Section --- */}
           <div className="product-feedback-section">
             <div className="feedback-header">
               <h2 className="feedback-title">Customer Reviews</h2>
-              <button className="secondary-btn-review">Write a Review</button>
+              {/* REMOVED: "Write a Review" button */}
             </div>
+
             <div className="feedback-list">
-              {product.reviews.length > 0 ? (
-                product.reviews.map(review => (
-                  <div key={review.id} className="review-card">
+              {reviews.length > 0 ? (
+                reviews.map(review => (
+                  <div key={review.ReviewID} className="review-card">
                     <div className="review-card-header">
-                      <StarRating rating={review.rating} />
-                      <span className="review-date">{review.date}</span>
+                      <span className="review-date">{new Date(review.CreatedAt).toLocaleDateString()}</span>
                     </div>
-                    <h3 className="review-title">{review.title}</h3>
-                    <p className="review-author">by {review.author}</p>
-                    <p className="review-text">{review.text}</p>
+                    <h3 className="review-title">{review.Title}</h3>
+                    <p className="review-author">by {review.CustomerName}</p>
+                    <p className="review-text">{review.Content}</p>
                   </div>
                 ))
               ) : (
                 <p className="no-reviews-text">Be the first to review this product!</p>
               )}
             </div>
+
+            {/* --- NEW: Inline Review Form --- */}
+            <form className="product-review-form" onSubmit={handleReviewSubmit}>
+              <h3>Write a Review</h3>
+              
+              <div className="review-form-group">
+                <label htmlFor="reviewTitle">Title</label>
+                <input 
+                  type="text" 
+                  id="reviewTitle" 
+                  placeholder="Summarize your experience" 
+                  value={reviewTitle}
+                  onChange={(e) => setReviewTitle(e.target.value)}
+                  required 
+                />
+              </div>
+
+              <div className="review-form-group">
+                <label htmlFor="reviewContent">Review</label>
+                <textarea 
+                  id="reviewContent" 
+                  placeholder="How was the quality, fit, etc?" 
+                  value={reviewContent}
+                  onChange={(e) => setReviewContent(e.target.value)}
+                  required
+                />
+              </div>
+
+              <button type="submit" className="primary-btn submit-review-btn">
+                Submit Review
+              </button>
+            </form>
+
           </div>
           
         </div>

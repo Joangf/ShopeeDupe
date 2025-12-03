@@ -71,22 +71,18 @@ const Navbar = ({isLoggedIn, setIsLoggedIn, activeCategories}) => {
     const value = e.target.value;
     setSearchValue(value);
     setIsSearchDropdownOpen(value.length > 0);
+    if (value.length === 0) {
+      setSearchResult([]);
+      return;
+    }
     try {
-      const request = {
-        keyword: value,
-        categoryIds: activeCategories.flatMap(category => Array.isArray(category.id) ? category.id : [category.id])
-      }
-      const response = await fetch(`${API_URL}/book/search`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(request),
-      });
+      const response = await fetch(`${API_URL}/search/products?keyword=${value}`);
       const data = await response.json();
       if(!response.ok){
         console.log("Searching failed");
         return;
       }
-      setSearchResult(data.result.content);
+      setSearchResult(data.products);
     }
     catch(error){
       console.log(error);
@@ -99,10 +95,10 @@ const Navbar = ({isLoggedIn, setIsLoggedIn, activeCategories}) => {
     }
   };
 
-  const handleBookSelect = (book) => {
-    setSearchValue(book.title);
+  const handleBookSelect = (product) => {
+    setSearchValue(product.Name);
     setIsSearchDropdownOpen(false);
-    navigate(`/book/${book.id}`); // Assuming this will be /product/{id}
+    navigate(`/product/${product.ProductID}`);
   };
 
   const handleLogout = async () => {
@@ -112,7 +108,9 @@ const Navbar = ({isLoggedIn, setIsLoggedIn, activeCategories}) => {
         console.log("Logged out successfully");
         setIsDropdownOpen(false);
         setIsLoggedIn(false);
-        sessionStorage.setItem('isLoggedIn', 'false');
+        localStorage.setItem('isLoggedIn', 'false');
+        localStorage.removeItem('idUser');
+        localStorage.removeItem('nameUser');
         navigate("/");
       }
     } catch (error) {
@@ -159,12 +157,12 @@ const Navbar = ({isLoggedIn, setIsLoggedIn, activeCategories}) => {
             <div ref={searchDropdownRef} className="search-dropdown">
               {searchResult.map((product) => (
                 <div
-                  key={product.id}
+                  key={product.ProductID}
                   className="search-book-item" // Renamed to .search-product-item in CSS
                   onClick={() => handleBookSelect(product)}
                 >
-                  <div className="search-book-title">{product.title}</div>
-                  <div className="search-book-author">by {product.author}</div>
+                  <div className="search-book-title">{product.Name}</div>
+                  <div className="search-book-author">by {product.BrandName}</div>
                 </div>
               ))}
             </div>

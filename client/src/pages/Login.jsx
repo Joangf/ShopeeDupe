@@ -84,13 +84,14 @@ const handleSubmit = async (e) => {
     });
 
   } else if (activeTab === "login") {
-    const loginData = {email: formData.email,password: formData.password,}
+    const loginData = {email: formData.email,password: formData.password, userId: null, phoneNumber: null};
     console.log("Login attempt:", loginData);
 
     await doRequest("/auth/login/customer", loginData, async (response) => {
       const responseData = await response.json();
       console.log("Login successful:", responseData);
-      localStorage.setItem('idUser', responseData.result.result);
+      localStorage.setItem('idUser', responseData.userId);
+      localStorage.setItem('nameUser', responseData.userInfo.FullName);
       setIsLoggedIn(true);
       localStorage.setItem('isLoggedIn', 'true');
       navigate("/");

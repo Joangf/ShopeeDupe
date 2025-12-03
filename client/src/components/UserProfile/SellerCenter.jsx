@@ -1,7 +1,7 @@
 import { useState } from "react";
 import "./SellerCenter.css"; // We will create this next
-
-const SellerCenter = ({ isSeller, onRegisterSuccess, formData }) => {
+const API_URL = import.meta.env.VITE_BACKEND_URL;
+const SellerCenter = ({ sellerData, setSellerData }) => {
   // State for the registration form
   const [shopData, setShopData] = useState({
     businessName: "",
@@ -14,10 +14,23 @@ const SellerCenter = ({ isSeller, onRegisterSuccess, formData }) => {
 
   const handleRegister = async (e) => {
     e.preventDefault();
+    const userId = localStorage.getItem('idUser');
+    try {
+      const response = await fetch(`${API_URL}/auth/register/seller/${userId}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(shopData),
+      });
+      if (response.ok) {
+        setSellerData(true);
+      }
+    } catch (error) {
+      console.error("Registration failed:", error);
+    }
   };
 
   // --- VIEW 1: USER IS ALREADY A SELLER (DASHBOARD) ---
-  if (isSeller) {
+  if (sellerData) {
     return (
       <div className="profile-main seller-dashboard">
         <div className="profile-header">

@@ -6,19 +6,11 @@ const ProductGrid = ({ products, displaySecTitle = true, backgroundColor = '#FFF
   // Helper to format price (e.g., 29.99 -> $29.99)
   const navigate = useNavigate();
   const formatPrice = (price) => {
-    return new Intl.NumberFormat('en-US', {
+    return new Intl.NumberFormat('vi-VN', {
       style: 'currency',
-      currency: 'USD',
+      currency: 'VND',
     }).format(price);
   };
-  if (!products || products.length === 0) {
-    products = [
-      { id: 1, name: 'Sample Product 1', price: 29.99, imageUrl: 'https://via.placeholder.com/150' },
-      { id: 2, name: 'Sample Product 2', price: 49.99, imageUrl: 'https://via.placeholder.com/150' },
-      { id: 3, name: 'Sample Product 3', price: 19.99, imageUrl: 'https://via.placeholder.com/150' },
-      { id: 4, name: 'Sample Product 4', price: 99.99, imageUrl: 'https://via.placeholder.com/150' },
-    ];
-  }
   return (
     <section className="product-grid" style={{
       "--color": backgroundColor,
@@ -30,15 +22,15 @@ const ProductGrid = ({ products, displaySecTitle = true, backgroundColor = '#FFF
         <div className="product-grid-container">
           {products.map((product) => (
             <div
-              key={product.id}
+              key={product.ProductID}
               className="product-grid-item"
-              title={`${product.name} - ${formatPrice(product.price)}`} // Updated title
-              onClick={() => navigate(`/product/${product.id}`)}
+              title={`${product.Name} - ${formatPrice(product.Price)}`} // Updated title
+              onClick={() => navigate(`/product/${product.ProductID}`)}
             >
-              <img src={product.imageUrl} alt={product.name} className="product-image" />
+              <img src={product.ImageURL} alt={product.Name} className="product-image" />
               <div className="product-info">
-                <h3 className="product-name">{product.name}</h3>
-                <p className="product-price">{formatPrice(product.price)}</p>
+                <h3 className="product-name">{product.Name}</h3>
+                <p className="product-price">{formatPrice(product.Price)}</p>
               </div>
             </div>
           ))}
