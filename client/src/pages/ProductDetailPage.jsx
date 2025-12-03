@@ -3,7 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import './ProductDetailPage.css';
 import Navbar from '../components/Home/Navbar';
 import TickingFail from '../components/Notifications/TickingFail';
-
+import TickingSuccess from '../components/Notifications/TickingSuccess';
 const API_URL = import.meta.env.VITE_BACKEND_URL;
 
 // Helper to format price
@@ -25,6 +25,7 @@ const ProductDetailPage = ({ isLoggedIn, setIsLoggedIn }) => {
   
   // Review Form States
   const [loginToReview, setLoginToReview] = useState(false);
+  const [reviewSuccess, setReviewSuccess] = useState(false);
   const [reviewTitle, setReviewTitle] = useState('');
   const [reviewContent, setReviewContent] = useState('');
 
@@ -32,8 +33,31 @@ const ProductDetailPage = ({ isLoggedIn, setIsLoggedIn }) => {
     setQuantity(prev => Math.max(1, prev + amount));
   };
 
-  const handleAddToCart = () => {
-    console.log(`Added ${quantity} of ${product.name} to cart.`);
+  const handleAddToCart = async () => {
+    if (!isLoggedIn) {
+      setLoginToReview(true);
+      setTimeout(() => navigate('/login'), 2000);
+      return;
+    }
+    try {
+      const response = await fetch(`${API_URL}/cart/add`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          userId: localStorage.getItem('idUser'),
+          productId: product.ProductID,
+          quantity: quantity,
+        }),
+      });
+      if (response.ok) {
+        setReviewSuccess(true);
+        setTimeout(() => setReviewSuccess(false), 2000);
+      }
+    } catch (error) {
+      console.error('Error adding to cart:', error);
+    }
   };
 
   const handleReviewSubmit = async (e) => {
@@ -108,6 +132,7 @@ const ProductDetailPage = ({ isLoggedIn, setIsLoggedIn }) => {
   return (
     <>
       {loginToReview && !isLoggedIn && <TickingFail message="Please log in to submit a review." isVisible={true} />}
+      {reviewSuccess && <TickingSuccess message="Added to cart successfully!" isVisible={true} />}
       <Navbar isLoggedIn={isLoggedIn} setIsLoggedIn={setIsLoggedIn} />
       <div className="product-page-container">
         <div className="product-content">

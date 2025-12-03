@@ -1,67 +1,69 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "./Cart.css";
 import Navbar from "../components/Home/Navbar";
-// Dummy data - replace this with your actual cart state
-const initialCartItems = [
-  {
-    id: 1,
-    name: "Classic White T-Shirt",
-    price: 25.0,
-    imageUrl: "https://via.placeholder.com/150/F5F5F5/333333?text=Product+1",
-    quantity: 1,
-  },
-  {
-    id: 2,
-    name: "Modern Blue Jeans",
-    price: 79.99,
-    imageUrl: "https://via.placeholder.com/150/F5F5F5/333333?text=Product+2",
-    quantity: 2,
-  },
-];
+const API_URL = import.meta.env.VITE_BACKEND_URL;
+
 
 // Helper to format price
 const formatPrice = (price) => {
-  return new Intl.NumberFormat("en-US", {
+  return new Intl.NumberFormat("vi-VN", {
     style: "currency",
-    currency: "USD",
+    currency: "VND",
   }).format(price);
 };
 
 const Cart = ({ isLoggedIn, setIsLoggedIn }) => {
-  const [cartItems, setCartItems] = useState(initialCartItems);
+  const [cartItems, setCartItems] = useState([]);
   const navigate = useNavigate();
 
   // --- Cart Logic ---
 
-  const handleQuantityChange = (id, amount) => {
+  const handleQuantityChange = async (id, amount) => {
     setCartItems(
       (prevItems) =>
         prevItems
           .map((item) =>
-            item.id === id
-              ? { ...item, quantity: Math.max(1, item.quantity + amount) } // Prevent quantity < 1
+            item.ProductID === id
+              ? { ...item, quantity: item.quantity + amount }
               : item
           )
           .filter((item) => item.quantity > 0) // Remove if quantity hits 0 (optional)
     );
+    try {
+      const quantity = cartItems.find(item => item.ProductID === id).quantity;
+      const userId = localStorage.getItem('idUser');
+      const response = await fetch(`${API_URL}/cart/update`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          userId: userId,
+          productId: id,
+          quantity: quantity + amount,
+        }),
+      });
+    } catch (error) {
+      console.error('Error updating cart:', error);
+    }
   };
 
   const handleRemoveItem = (id) => {
-    setCartItems((prevItems) => prevItems.filter((item) => item.id !== id));
+    setCartItems((prevItems) => prevItems.filter((item) => item.ProductID !== id));
   };
 
   const calculateSubtotal = () => {
     return cartItems.reduce(
-      (total, item) => total + item.price * item.quantity,
+      (total, item) => total + item.Price * item.quantity,
       0
     );
   };
 
   const subtotal = calculateSubtotal();
   // Example shipping/tax. You would calculate this.
-  const shipping = subtotal > 0 ? 5.0 : 0;
-  const tax = subtotal * 0.08;
+  const shipping = 0;
+  const tax = 0;
   const total = subtotal + shipping + tax;
 
   // --- Render Functions ---
@@ -81,27 +83,27 @@ const Cart = ({ isLoggedIn, setIsLoggedIn }) => {
       {/* Left Column: Cart Items */}
       <div className="cart-items-list">
         {cartItems.map((item) => (
-          <div key={item.id} className="cart-item-card">
+          <div key={item.ProductID} className="cart-item-card">
             <img
-              src={item.imageUrl}
-              alt={item.name}
+              src={item.ImageURL}
+              alt={item.Name}
               className="cart-item-image"
             />
             <div className="cart-item-details">
-              <h3 className="cart-item-name">{item.name}</h3>
-              <p className="cart-item-price">{formatPrice(item.price)}</p>
+              <h3 className="cart-item-name">{item.Name}</h3>
+              <p className="cart-item-price">{formatPrice(item.Price)}</p>
             </div>
             <div className="cart-item-actions">
               <div className="quantity-selector">
                 <button
-                  onClick={() => handleQuantityChange(item.id, -1)}
+                  onClick={() => handleQuantityChange(item.ProductID, -1)}
                   title="Decrease quantity"
                 >
                   -
                 </button>
                 <span>{item.quantity}</span>
                 <button
-                  onClick={() => handleQuantityChange(item.id, 1)}
+                  onClick={() => handleQuantityChange(item.ProductID, 1)}
                   title="Increase quantity"
                 >
                   +
@@ -109,7 +111,7 @@ const Cart = ({ isLoggedIn, setIsLoggedIn }) => {
               </div>
               <button
                 className="remove-button"
-                onClick={() => handleRemoveItem(item.id)}
+                onClick={() => handleRemoveItem(item.ProductID)}
               >
                 Remove
               </button>
@@ -146,7 +148,22 @@ const Cart = ({ isLoggedIn, setIsLoggedIn }) => {
       </div>
     </div>
   );
-
+  useEffect(() => {
+    const fetchCartItems = async () => {
+      try {
+        const userId = localStorage.getItem('idUser');
+        const response = await fetch(`${API_URL}/cart/${userId}`);
+        if (response.ok) {
+          const data = await response.json();
+          setCartItems(data);
+        }
+        
+      } catch (error) {
+        console.error("Failed to fetch cart items:", error);
+      }
+    }
+    fetchCartItems();
+  }, [])
   return (
     <>
       <Navbar isLoggedIn={isLoggedIn} setIsLoggedIn={setIsLoggedIn} />
