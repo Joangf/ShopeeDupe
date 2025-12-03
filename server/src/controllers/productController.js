@@ -1,3 +1,4 @@
+import e from "express";
 import pool from "../config/database.js";
 
 export const addNewProduct = async (req, res) => {
@@ -37,7 +38,7 @@ export const addNewProduct = async (req, res) => {
     });
   } catch (error) {
     console.error("Unexpected error:", error);
-    res.status(500).json({ error: "Internal server errors" });
+    res.status(400).json({ error: error.message });
   }
 };
 
@@ -106,3 +107,69 @@ export const getReviewsByProductId = async (req, res) => {
   }
 };
 
+
+export const searchProductsByKeyword = async (req, res) => {
+  try {
+    const { keyword } = req.query;
+    if (!keyword) {
+      return res.status(400).json({ error: "Keyword query parameter is required" });
+    }
+    const searchTerm = `%${keyword}%`;
+    const [rows] = await pool.query(
+      "SELECT * FROM Product WHERE Name LIKE ? OR Description LIKE ?",
+      [searchTerm, searchTerm]
+    );
+    return res.status(200).json({
+      message: "Successful",
+      products: rows
+    });
+  } catch (error) {
+    console.error("Unexpected error:", error);
+    res.status(500).json({ error: "Internal server errors" });
+  }
+};
+
+export const postReviewsByProductId = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const {customerName, title, content, customerId} = req.body;
+    if (!customerName || !title || !content || !customerId) {
+      return res.status(400).json({ error: "Missing required fields" });
+    }
+    const [result] = await pool.query('CALL CreateReview(?, ?, ?, ?, ?)',
+      [
+        id,
+        customerName,
+        title,
+        content,
+        customerId,
+      ]
+    );
+    return res.status(200).json({
+      message: "Review created successfully",
+    });
+  } catch (error) {
+    console.error("Unexpected error:", error);
+    res.status(500).json({ error: "Internal server errors" });
+  }
+};
+
+export const getProductBySellerId = async (req, res) => {
+  try {
+    const { sellerId } = req.params;
+    const [rows] = await pool.query(
+      "SELECT * FROM Product WHERE SellerID = ?",
+      [sellerId]
+    );
+    if (rows.length === 0) {
+      return res.status(404).json({ error: "No products found for this seller" });
+    }
+    return res.status(200).json({
+      message: "Successful",
+      products: rows
+    });
+  } catch (error) {
+    console.error("Unexpected error:", error);
+    res.status(500).json({ error: "Internal server errors" });
+  }
+};

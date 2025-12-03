@@ -104,10 +104,11 @@ export const customerLogin = async (req, res) => {
         .status(401)
         .json({ error: out.reason || "Invalid email or password" });
     }
-
+    const [userInfo] = await pool.query('SELECT FullName FROM User WHERE UserID = ?', [out.returnedUserID]);
     return res.status(200).json({
       message: "Login successful",
       userId: out.returnedUserID,
+      userInfo: userInfo[0]
     });
   } catch (error) {
     console.error("Unexpected error:", error);
