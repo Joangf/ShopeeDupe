@@ -121,6 +121,11 @@
   background: #FFFFFF;
   border: 1px solid #E0E0E0;
   border-radius: 8px;
+  cursor: pointer;
+  transition: transform 0.3s ease;
+}
+.detail-item-card:hover {
+  transform: scale(1.02);
 }
 .detail-item-image {
   width: 80px;

@@ -15,10 +15,19 @@ const formatPrice = (price) => {
 
 const Cart = ({ isLoggedIn, setIsLoggedIn }) => {
   const [cartItems, setCartItems] = useState([]);
+  const [formData, setFormData] = useState({
+    address: "",
+  });
+  const [isLoading, setIsLoading] = useState(true);
   const navigate = useNavigate();
 
   // --- Cart Logic ---
-
+  const handleInputChange = (e) => {
+    setFormData((prevData) => ({
+      ...prevData,
+      address: e.target.value,
+    }));
+  }
   const handleQuantityChange = async (id, amount) => {
     setCartItems(
       (prevItems) =>
@@ -52,7 +61,30 @@ const Cart = ({ isLoggedIn, setIsLoggedIn }) => {
   const handleRemoveItem = (id) => {
     setCartItems((prevItems) => prevItems.filter((item) => item.ProductID !== id));
   };
-
+  const handleCheckout = async (e) => {
+    e.preventDefault();
+    try {
+      const userId = localStorage.getItem('idUser');
+      const response = await fetch(`${API_URL}/order/create`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          userId: userId,
+          shipmentAddress: formData.address,
+        }),
+      });
+      if (response.ok) {
+        const data = await response.json();
+        navigate(`/orders/${data.order.OrderID}`);
+      } else {
+        console.error("Failed to create order");
+      }
+    } catch (error) {
+      console.error("Error during checkout:", error);
+    }
+  };
   const calculateSubtotal = () => {
     return cartItems.reduce(
       (total, item) => total + item.Price * item.quantity,
@@ -67,6 +99,12 @@ const Cart = ({ isLoggedIn, setIsLoggedIn }) => {
   const total = subtotal + shipping + tax;
 
   // --- Render Functions ---
+  const renderLoading = () => (
+    <div className="order-loader">
+      <div className="loading-spinner"></div>
+      <p>Loading Your Cart...</p>
+    </div>
+  );
 
   const renderEmptyCart = () => (
     <div className="cart-empty">
@@ -139,17 +177,36 @@ const Cart = ({ isLoggedIn, setIsLoggedIn }) => {
           <strong>Total</strong>
           <strong>{formatPrice(total)}</strong>
         </div>
-        <button
-          className="checkout-button primary-btn"
-          onClick={() => navigate("/checkout")}
-        >
-          Proceed to Checkout
-        </button>
+        <form action="submit" onSubmit={handleCheckout}>
+          <div className="form-group">
+
+            <input
+              type="address"
+              id="address"
+              name="address"
+              value={formData.address}
+              onChange={handleInputChange}
+              required
+              placeholder="Enter your address for delivery"
+              style={{
+                marginTop: "15px",
+              }}
+            />
+            <button
+              className="checkout-button primary-btn"
+              type="submit">
+              Proceed to Checkout
+            </button>
+          </div>
+        </form>
+
+
       </div>
     </div>
   );
   useEffect(() => {
     const fetchCartItems = async () => {
+      setIsLoading(true);
       try {
         const userId = localStorage.getItem('idUser');
         const response = await fetch(`${API_URL}/cart/${userId}`);
@@ -160,6 +217,8 @@ const Cart = ({ isLoggedIn, setIsLoggedIn }) => {
         
       } catch (error) {
         console.error("Failed to fetch cart items:", error);
+      } finally {
+        setIsLoading(false);
       }
     }
     fetchCartItems();
@@ -170,7 +229,7 @@ const Cart = ({ isLoggedIn, setIsLoggedIn }) => {
       <div className="cart-page-container">
         <div className="cart-content">
           <h1 className="cart-page-title">SHOPPING CART</h1>
-          {cartItems.length === 0 ? renderEmptyCart() : renderCart()}
+          {isLoading ? renderLoading() : (cartItems.length === 0 ? renderEmptyCart() : renderCart())}
         </div>
       </div>
     </>

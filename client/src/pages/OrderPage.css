@@ -150,6 +150,10 @@
   background-color: #FFF8E6; /* Light orange */
   color: #D97706;
 }
+.order-status-badge.pending {
+  background-color: #FFF1F1; /* Light red */
+  color: #B91C1C;
+}
 
 /* --- Card Body (Item Previews) --- */
 .order-card-body {

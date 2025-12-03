@@ -256,7 +256,6 @@
   }
   .logo-keazon { font-size: 24px; }
   .logo-books { font-size: 12px; letter-spacing: 2.5px; }
-  .action-button { display: none; } /* Hide action buttons on small mobile */
   .actions-section {
     gap: 0;
   }
@@ -268,9 +267,6 @@
   }
 }
 @media (max-width: 600px) {
-  .action-button {
-    display: none;
-  }
 
   .logo-books {
     display: none;

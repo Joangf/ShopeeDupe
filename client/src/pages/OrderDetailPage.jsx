@@ -2,90 +2,95 @@ import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import './OrderDetailPage.css';
 import Navbar from '../components/Home/Navbar';
-const dummyOrder = {
-  id: '123-456789',
-  date: 'November 15, 2025',
-  status: 'Shipped',
-  estimatedDelivery: 'November 20, 2025',
-  shippingAddress: {
-    name: 'Jane Doe',
-    street: '123 Main St',
-    city: 'Anytown',
-    state: 'CA',
-    zip: '12345',
-  },
-  payment: {
-    method: 'Visa',
-    lastFour: '1234',
-    billingAddress: {
-      name: 'Jane Doe',
-      street: '123 Main St',
-      city: 'Anytown',
-      state: 'CA',
-      zip: '12345',
-    }
-  },
-  items: [
-    {
-      id: 1,
-      name: 'Modern E-Commerce T-Shirt',
-      price: 29.99,
-      imageUrl: 'https://via.placeholder.com/150/F5F5F5/333333?text=Product+1',
-      quantity: 1,
-    },
-    {
-      id: 2,
-      name: 'Classic White T-Shirt',
-      price: 25.00,
-      imageUrl: 'https://via.placeholder.com/150/F5F5F5/333333?text=Product+2',
-      quantity: 2,
-    },
-  ],
-  summary: {
-    subtotal: 79.99,
-    shipping: 5.00,
-    tax: 6.40,
-    total: 91.39,
-  },
-  progress: {
-    steps: ['Order Placed', 'Processing', 'Shipped', 'Delivered'],
-    currentStep: 'Shipped',
-  }
-};
-// --------------------
+import TickingSuccess from '../components/Notifications/TickingSuccess';
+const API_URL = import.meta.env.VITE_BACKEND_URL;
 
 // Helper to format price
 const formatPrice = (price) => {
-  return new Intl.NumberFormat('en-US', {
+  return new Intl.NumberFormat('vi-VN', {
     style: 'currency',
-    currency: 'USD',
+    currency: 'VND',
   }).format(price);
 };
 
 // --- Main Page Component ---
+const progress = {
+  steps: ['Pending', 'Processing', 'Shipped', 'Delivered'],
+};
 const OrderDetailPage = ({ isLoggedIn, setIsLoggedIn }) => {
   const { orderId } = useParams();
   const [order, setOrder] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [showSuccess, setShowSuccess] = useState(false);
   const navigate = useNavigate();
-
+  const [currentStepIndex, setCurrentStepIndex] = useState(0);
+  const [formData, setFormData] = useState({
+    paymentMethod: '',
+  });
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setFormData(prevData => ({
+      ...prevData,
+      [name]: value,
+    }));
+  };
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      const response = await fetch(`${API_URL}/order/payment`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          userId: localStorage.getItem('idUser'),
+          orderId: orderId,
+          paymentMethod: formData.paymentMethod,
+        }),
+      });
+      if (response.ok) {
+        setShowSuccess(true);
+        setOrder(prevOrder => ({
+          ...prevOrder,
+          paymentMethod: formData.paymentMethod,
+          status: 'Processing',
+        }));
+        setCurrentStepIndex(1);
+        setTimeout(() => setShowSuccess(false), 2000);
+      } 
+    } catch (error) {
+      console.error("Failed to update payment method:", error);
+    }
+  };
   useEffect(() => {
     // --- Simulate API Fetch ---
     setIsLoading(true);
-    setTimeout(() => {
-      // In a real app, you'd fetch the order by orderId
-      setOrder(dummyOrder);
-      setIsLoading(false);
-    }, 1000);
-    // -------------------------
+    const fetchOrderDetails = async () => {
+      try {
+        const response = await fetch(`${API_URL}/order/details/${orderId}`);
+        if (response.ok) {
+          const orderData = await response.json();
+          setOrder(orderData);
+          setCurrentStepIndex(progress.steps.indexOf(orderData.status));
+        }
+      } catch (error) {
+        console.error("Failed to fetch order details:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    fetchOrderDetails();
   }, [orderId]);
 
   // Renders a loading spinner
   const renderLoading = () => (
-    <div className="order-detail-loader">
-      <div className="loading-spinner"></div>
-      <p>Loading Order Details...</p>
-    </div>
+    <>
+      <Navbar isLoggedIn={isLoggedIn} setIsLoggedIn={setIsLoggedIn} />
+      <div className="order-detail-loader">
+        <div className="loading-spinner"></div>
+        <p>Loading Order Details...</p>
+      </div>
+    </>
   );
 
   if (isLoading) {
@@ -104,19 +109,18 @@ const OrderDetailPage = ({ isLoggedIn, setIsLoggedIn }) => {
     );
   }
 
-  const { id, date, status, items, progress, summary, shippingAddress, payment } = order;
-  const currentStepIndex = progress.steps.indexOf(progress.currentStep);
 
   return (
     <>
+      {showSuccess && <TickingSuccess message="Payment method updated successfully!" isVisible={true} />}
       <Navbar isLoggedIn={isLoggedIn} setIsLoggedIn={setIsLoggedIn} />
       <div className="order-detail-page-container">
         <div className="order-detail-content">
-          <h1 className="order-detail-page-title">Order #{id}</h1>
+          <h1 className="order-detail-page-title">Order #{orderId}</h1>
           <div className="order-header-info">
-            <span>Placed on {date}</span>
-            <span className={`order-status-badge ${status.toLowerCase()}`}>
-              {status}
+            <span>Placed on {order.orderDate.split('T')[0]}</span>
+            <span className={`order-status-badge ${order.status.toLowerCase()}`}>
+              {order.status}
             </span>
           </div>
 
@@ -140,14 +144,14 @@ const OrderDetailPage = ({ isLoggedIn, setIsLoggedIn }) => {
             <div className="order-items-column">
               <h2>Items in this Order</h2>
               <div className="order-item-list">
-                {items.map(item => (
-                  <div key={item.id} className="detail-item-card">
-                    <img src={item.imageUrl} alt={item.name} className="detail-item-image" />
+                {order.products.map(item => (
+                  <div key={item.ProductID} className="detail-item-card" onClick={() => navigate(`/product/${item.ProductID}`)}>
+                    <img src={item.ImageURL} alt={item.Name} className="detail-item-image" />
                     <div className="detail-item-info">
-                      <span className="detail-item-name">{item.name}</span>
-                      <span className="detail-item-qty">Qty: {item.quantity}</span>
+                      <span className="detail-item-name">{item.Name}</span>
+                      <span className="detail-item-qty">Qty: {item.Quantity}</span>
                     </div>
-                    <span className="detail-item-price">{formatPrice(item.price * item.quantity)}</span>
+                    <span className="detail-item-price">{formatPrice(item.Price * item.Quantity)}</span>
                   </div>
                 ))}
               </div>
@@ -160,19 +164,19 @@ const OrderDetailPage = ({ isLoggedIn, setIsLoggedIn }) => {
                 <h2>Order Summary</h2>
                 <div className="summary-row">
                   <span>Subtotal</span>
-                  <span>{formatPrice(summary.subtotal)}</span>
+                  <span>{formatPrice(order.totalAmount)}</span>
                 </div>
                 <div className="summary-row">
                   <span>Shipping</span>
-                  <span>{formatPrice(summary.shipping)}</span>
+                  <span>{formatPrice(0)}</span>
                 </div>
                 <div className="summary-row">
                   <span>Tax</span>
-                  <span>{formatPrice(summary.tax)}</span>
+                  <span>{formatPrice(0)}</span>
                 </div>
                 <div className="summary-total">
                   <strong>Total</strong>
-                  <strong>{formatPrice(summary.total)}</strong>
+                  <strong>{formatPrice(order.totalAmount)}</strong>
                 </div>
               </div>
 
@@ -180,18 +184,38 @@ const OrderDetailPage = ({ isLoggedIn, setIsLoggedIn }) => {
               <div className="summary-card">
                 <h2>Shipping Address</h2>
                 <p className="address-block">
-                  <strong>{shippingAddress.name}</strong><br />
-                  {shippingAddress.street}<br />
-                  {shippingAddress.city}, {shippingAddress.state} {shippingAddress.zip}
+                  <strong>{order.shippingAddress}</strong><br />
+                  {/* {shippingAddress.street}<br />
+                  {shippingAddress.city}, {shippingAddress.state} {shippingAddress.zip} */}
                 </p>
               </div>
 
               {/* Payment Method */}
               <div className="summary-card">
                 <h2>Payment Method</h2>
-                <p className="address-block">
-                  <strong>{payment.method}</strong> ending in {payment.lastFour}
-                </p>
+                {order.paymentMethod ? 
+                (
+                  <p className="address-block">
+                    <strong>{order.paymentMethod}</strong>
+                  </p>
+                ) : 
+                (
+                  <form action="submit" onSubmit={handleSubmit}>
+                    <div className="form-group">
+                      <input
+                        type="text"
+                        id="paymentMethod"
+                        name="paymentMethod"
+                        value={formData.paymentMethod}
+                        onChange={handleInputChange}
+                        placeholder="Enter payment method"
+                      />
+                    <button type="submit" className="primary-btn">Submit</button>
+                    </div>
+                  </form>
+                )
+                  }
+
               </div>
 
             </div>

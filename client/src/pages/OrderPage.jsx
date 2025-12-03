@@ -2,45 +2,14 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './OrderPage.css';
 import Navbar from '../components/Home/Navbar';
-const dummyOrders = [
-  {
-    id: '123-456789',
-    date: 'November 15, 2025',
-    status: 'Delivered', // 'Delivered', 'Shipped', 'Processing'
-    total: 134.98,
-    items: [
-      'https://via.placeholder.com/150/F5F5F5/333333?text=Product+1',
-      'https://via.placeholder.com/150/F5F5F5/333333?text=Product+2',
-    ]
-  },
-  {
-    id: '123-987654',
-    date: 'November 10, 2025',
-    status: 'Shipped',
-    total: 29.99,
-    items: [
-      'https://via.placeholder.com/150/F5F5F5/333333?text=Product+3',
-    ]
-  },
-  {
-    id: '123-111222',
-    date: 'November 1, 2025',
-    status: 'Processing',
-    total: 79.99,
-    items: [
-      'https://via.placeholder.com/150/F5F5F5/333333?text=Product+4',
-      'https://via.placeholder.com/150/F5F5F5/333333?text=Product+5',
-      'https://via.placeholder.com/150/F5F5F5/333333?text=Product+6',
-    ]
-  },
-];
-// --------------------
+const API_URL = import.meta.env.VITE_BACKEND_URL;
+
 
 // Helper to format price
 const formatPrice = (price) => {
-  return new Intl.NumberFormat('en-US', {
+  return new Intl.NumberFormat('vi-VN', {
     style: 'currency',
-    currency: 'USD',
+    currency: 'VND',
   }).format(price);
 };
 
@@ -53,12 +22,20 @@ const OrderPage = ({ isLoggedIn, setIsLoggedIn }) => {
   useEffect(() => {
     // --- Simulate API Fetch ---
     setIsLoading(true);
-    setTimeout(() => {
-      // In a real app, you'd fetch orders for the logged-in user
-      setOrders(dummyOrders);
-      setIsLoading(false);
-    }, 1000);
-    // -------------------------
+    const fetchOrders = async () => {
+      try {
+        const response = await fetch(`${API_URL}/order/user/${localStorage.getItem('idUser')}`);
+        if (response.ok) {
+          const orders = await response.json();
+          setOrders(orders); // Assuming API returns { orders: [...] }
+        }
+      } catch (error) {
+        console.error('Error fetching orders:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    }
+    fetchOrders();
   }, []);
 
   // Renders a loading spinner
@@ -87,17 +64,17 @@ const OrderPage = ({ isLoggedIn, setIsLoggedIn }) => {
         <div key={order.id} className="order-card">
           <div className="order-card-header">
             <div className="header-info">
-              <span className="order-id">Order #{order.id}</span>
-              <span className="order-date">Placed on {order.date}</span>
+              <span className="order-id">Order #{order.OrderID}</span>
+              <span className="order-date">Placed on {order.OrderDate.split('T')[0]}</span>
             </div>
             {/* Status Badge */}
-            <span className={`order-status-badge ${order.status.toLowerCase()}`}>
-              {order.status}
+            <span className={`order-status-badge ${order.Status.toLowerCase()}`}>
+              {order.Status}
             </span>
           </div>
           
           <div className="order-card-body">
-            {order.items.slice(0, 5).map((imgUrl, index) => ( // Show first 5 items
+            {/* {order.items.slice(0, 5).map((imgUrl, index) => ( // Show first 5 items
               <img 
                 key={index}
                 src={imgUrl} 
@@ -107,14 +84,14 @@ const OrderPage = ({ isLoggedIn, setIsLoggedIn }) => {
             ))}
             {order.items.length > 5 && (
               <div className="item-preview-more">+{order.items.length - 5} more</div>
-            )}
+            )} */}
           </div>
 
           <div className="order-card-footer">
-            <span className="order-total">{formatPrice(order.total)}</span>
+            <span className="order-total">{formatPrice(order.TotalAmount)}</span>
             <button 
               className="secondary-btn" 
-              onClick={() => navigate(`/orders/${order.id}`)} // Link to specific order tracking
+              onClick={() => navigate(`/orders/${order.OrderID}`)} // Link to specific order tracking
             >
               View Details
             </button>
