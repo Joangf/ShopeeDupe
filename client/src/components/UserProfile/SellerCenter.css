@@ -146,6 +146,55 @@
     color: #666;
 }
 
+.product-textarea {
+  width: 100%;
+  padding: 12px 15px;
+  border: 1px solid #D0D0D0;
+  border-radius: 6px;
+  font-family: 'Roboto', -apple-system, Roboto, Helvetica, sans-serif;
+  font-size: 15px;
+  color: #333;
+  background: #FFFFFF;
+  box-sizing: border-box; /* Ensures padding doesn't affect width */
+  transition: all 0.2s ease;
+  min-height: 120px;
+  resize: vertical; /* Allows user to stretch height */
+}
+.modal-backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  align-items: center;
+  background: rgba(252, 251, 251, 0.8);
+  justify-content: center;
+  z-index: 9999;
+}
+.product-form {
+  background: #FFFFFF;
+  padding: 30px;
+  border-radius: 8px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+  width: 500px;
+  max-width: 90%;
+}
+.modal-header {
+  display: flex;
+}
+.close-product-form {
+  background: transparent;
+  border: none;
+  font-size: 24px;
+  font-weight: bold;
+  cursor: pointer;
+  margin-left: auto;
+  color: #999;
+}
+.close-product-form:hover {
+  color: #582828;
+}
 /* Responsive adjustments */
 @media (max-width: 900px) {
   .seller-benefits {
