@@ -173,12 +173,16 @@ const Navbar = ({isLoggedIn, setIsLoggedIn, activeCategories}) => {
         <div className="actions-section">
           
           {/* Replaced Library and Notifications with Cart */}
-          <button className="action-button" title="Shopping Cart" onClick={() => navigate("/cart")}>
-            <CartIcon />
-          </button>
-          <button className="action-button" title="My Orders" onClick={() => navigate("/orders")}>
-            <OrderIcon />
-          </button>
+          {isLoggedIn && (
+            <>
+              <button className="action-button" title="Shopping Cart" onClick={() => navigate("/cart")}>
+                <CartIcon />
+              </button>
+              <button className="action-button" title="My Orders" onClick={() => navigate("/orders")}>
+                <OrderIcon />
+              </button>
+            </>
+          )}
           {isLoggedIn  
             ?(
               <div className="profile-wrapper">

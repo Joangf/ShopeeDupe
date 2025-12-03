@@ -131,7 +131,7 @@ const ProductDetailPage = ({ isLoggedIn, setIsLoggedIn }) => {
 
   return (
     <>
-      {loginToReview && !isLoggedIn && <TickingFail message="Please log in to submit a review." isVisible={true} />}
+      {loginToReview && !isLoggedIn && <TickingFail message="Please log in to submit." isVisible={true} />}
       {reviewSuccess && <TickingSuccess message="Added to cart successfully!" isVisible={true} />}
       <Navbar isLoggedIn={isLoggedIn} setIsLoggedIn={setIsLoggedIn} />
       <div className="product-page-container">

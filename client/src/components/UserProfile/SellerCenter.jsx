@@ -154,13 +154,18 @@ const SellerCenter = ({ sellerData, setSellerData }) => {
         body: JSON.stringify(shopData),
       });
       if (response.ok) {
-        setSellerData(true);
+        setSellerData({
+          isSeller: true,
+          businessName: shopData.businessName,
+          businessAddress: shopData.businessAddress,
+        });
       }
     } catch (error) {
       console.error("Registration failed:", error);
     }
   };
   useEffect(() => {
+    if(!sellerData.isSeller) return;
     const fetchSellerProducts = async () => {
       try {
         const userId = localStorage.getItem('idUser');
@@ -176,7 +181,7 @@ const SellerCenter = ({ sellerData, setSellerData }) => {
     fetchSellerProducts();
   }, [])
   // --- VIEW 1: USER IS ALREADY A SELLER (DASHBOARD) ---
-  if (sellerData) {
+  if (sellerData.isSeller) {
     return (
       <>
       {isCreateProductOpen && (<CreateProductForm onClose={() => setIsCreateProductOpen(false)} setProducts={setProducts} />
