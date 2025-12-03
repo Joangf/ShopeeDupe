@@ -1,0 +1,525 @@
+@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;700;900&display=swap');
+
+/* Main Page Layout */
+.profile-page.industrial-theme {
+  min-height: 100vh;
+  padding-top: 80px; /* Space for fixed Navbar */
+  background: #FFFFFF; /* Consistent background */
+  color: #1A1A1A;
+  font-family: 'Roboto', sans-serif;
+}
+
+.profile-container {
+  display: flex;
+  max-width: 1400px;
+  margin: 0 auto;
+  gap: 40px;
+  padding: 40px;
+}
+
+/* Sidebar */
+.profile-sidebar {
+  flex: 0 0 280px; /* Fixed width sidebar */
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.user-info {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  padding-bottom: 20px;
+  border-bottom: 1px solid #EAEAEA;
+}
+
+.user-avatar img {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid #2D6A9E; /* Gold border for user avatar */
+}
+
+.user-name {
+  font-size: 20px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin: 0 0 4px 0;
+  color: #222222;
+}
+
+.user-subtitle {
+  margin: 0;
+  color: #A0A0A0;
+  font-size: 16px;
+  font-weight: 700;
+}
+
+.sidebar-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.sidebar-nav-item {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  padding: 12px 15px;
+  background: transparent;
+  border: none;
+  border-radius: 5px; /* Sharp corners */
+  border-left: 3px solid transparent; /* Placeholder for active state */
+  color: #222222; /* Muted color for inactive items */
+  font-size: 16px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-align: left;
+}
+.sidebar-nav-item:hover {
+  background: #E0E0E0;
+  color: #222222;
+  border-left-color: #2D6A9E;
+}
+.sidebar-nav-item.active {
+  background: #E0E0E0;
+  color: #2D6A9E; /* Gold for active item */
+  border-left-color: #2D6A9E;
+}
+
+.nav-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+}
+
+/* Main Content Panel */
+.profile-main {
+  flex: 1;
+  border: 1px solid #EAEAEA;
+  border-radius: 8px;
+  padding: 30px 40px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+}
+
+.profile-header h1 {
+  font-size: 28px;
+  font-weight: 900;
+  margin: 0 0 20px 0;
+  color: #222222;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  padding-bottom: 20px;    
+  border-bottom: 1px solid #EAEAEA;
+}
+
+.profile-content {
+  display: grid;
+  grid-template-columns: 1fr 300px; /* Form and picture section */
+  gap: 50px;
+  align-items: start;
+}
+
+/* Form Styling */
+.profile-form {
+  display: flex;
+  flex-direction: column;
+  gap: 25px;
+}
+.profile-form input {
+  min-width: 0;
+}
+
+.form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 25px;
+}
+
+
+.profile-form-button {
+  display: flex;
+  gap: 50px; /* space between buttons */
+  justify-content: flex-start; /* or center / space-between */
+  align-items: center;
+}
+
+.birthday-inputs {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 15px;
+}
+
+/* Profile Picture Section */
+.profile-picture-section {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  padding-top: 10px;
+}
+
+.section-title {
+  font-size: 16px;
+  font-weight: 700;
+  color: #222222;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin: 0;
+  text-align: center;
+}
+
+.profile-picture-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+}
+
+.profile-picture {
+  width: 200px;
+  height: 200px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 3px solid #333;
+}
+
+/* Button Styles (Primary & Secondary) */
+.primary-btn, .secondary-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  border-radius: 5px;
+  padding: 12px 24px;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  height: 44px;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+}
+
+.save-button.primary-btn {
+  background: #2D6A9E;
+  color: #FFFFFF;
+  align-self: flex-start; /* Align button to the left */
+  margin-top: 10px;
+}
+.save-button.primary-btn:hover {
+  background: #255C8A;
+  box-shadow: 0 0 15px rgba(45, 106, 158, 0.5);
+}
+
+.delete-button.primary-btn {
+  background: #582828;
+  color: #FFAAAA;
+  align-self: flex-start; /* Align button to the left */
+  margin-top: 10px;
+}
+.delete-button.primary-btn:hover {
+  background: #8B2E2E;
+  box-shadow: 0 0 12px rgba(255, 80, 80, 0.5);
+}
+
+
+
+.edit-picture-button.secondary-btn {
+  background: #2D6A9E;
+  color: white;
+  width: 100%;
+}
+.edit-picture-button.secondary-btn:hover {
+  background: #255C8A;
+  box-shadow: 0 0 15px rgba(45, 106, 158, 0.5);
+}
+
+/* --- Subscription Page Styles --- */
+
+.subscription-wrapper {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 20px 0;
+  min-height: 400px;
+}
+
+.plan-card {
+  background: linear-gradient(145deg, #2a2a2a, #1f1f1f);
+  border: 2px solid #FFD700;
+  border-radius: 12px;
+  padding: 40px 50px;
+  width: 100%;
+  max-width: 450px;
+  text-align: center;
+  box-shadow: 0 0 25px rgba(255, 215, 0, 0.1);
+  position: relative;
+  overflow: hidden;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.plan-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 15px 40px rgba(255, 215, 0, 0.2);
+}
+
+/* Ribbon/Badge */
+.plan-badge {
+  position: absolute;
+  top: 25px;
+  right: -35px;
+  background: #FFD700;
+  color: #1A1A1A;
+  padding: 7px 40px;
+  transform: rotate(45deg);
+  font-weight: 900;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.5);
+  z-index: 10;
+}
+
+.plan-title {
+  font-size: 28px;
+  font-weight: 900;
+  color: #FFD700;
+  margin: 0 0 10px 0;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+}
+
+.plan-subtitle {
+  color: #A0A0A0;
+  font-size: 14px;
+  margin-bottom: 25px;
+}
+
+.plan-price {
+  font-size: 56px;
+  font-weight: 700;
+  color: #E0E0E0;
+  margin: 0;
+  line-height: 1;
+}
+
+.plan-price span {
+  font-size: 18px;
+  color: #888;
+  font-weight: 400;
+  margin-left: 5px;
+}
+
+.plan-divider {
+  height: 1px;
+  background: linear-gradient(90deg, transparent, #333, transparent);
+  margin: 30px 0;
+}
+
+.plan-features {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 30px 0;
+  text-align: left;
+}
+
+.plan-features li {
+  padding: 12px 0;
+  color: #E0E0E0;
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  font-size: 15px;
+}
+
+.check-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  background: rgba(255, 215, 0, 0.1);
+  border-radius: 50%;
+  color: #FFD700;
+  flex-shrink: 0;
+}
+
+.check-icon svg {
+  width: 12px;
+  height: 12px;
+}
+
+.subscribe-btn {
+  width: 100%;
+  background: #FFD700;
+  color: #1A1A1A;
+  font-size: 16px;
+  padding: 16px;
+  border: none;
+  border-radius: 6px;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+}
+
+.subscribe-btn:hover {
+  background: #FFE44D;
+  box-shadow: 0 0 25px rgba(255, 215, 0, 0.4);
+  transform: scale(1.02);
+}
+.subscribe-btn:disabled {
+  box-shadow: none;
+  transform: none;
+  cursor: not-allowed;
+  background: #2D6A9E;
+}
+
+/* Responsive Design */
+@media (max-width: 1200px) {
+  .profile-content {
+    grid-template-columns: 1fr;
+  }
+  .profile-picture-section {
+    order: -1; /* Move picture to the top */
+    padding-bottom: 30px;
+    border-bottom: 1px solid #333;
+    margin-bottom: 30px;
+  }
+}
+
+@media (max-width: 900px) {
+  .profile-container {
+    flex-direction: column;
+  }
+  .profile-sidebar {
+    width: 100%;
+    flex: 1;
+  }
+  .plan-card {
+    padding: 30px 20px;
+  }
+}
+
+@media (max-width: 600px) {
+  .profile-main {
+    padding: 20px;
+  }
+  .form-row, .birthday-inputs {
+    grid-template-columns: 1fr;
+    gap: 25px;
+  }
+}
+/* --- Delete Confirmation Modal --- */
+
+/* Full-screen overlay */
+.confirm-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(5px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2000;
+  animation: fadeIn 0.3s ease;
+}
+
+/* The modal box itself */
+.confirm-modal {
+  background: #242424; /* Panel background */
+  border: 1px solid #333;
+  border-radius: 8px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
+  max-width: 500px;
+  width: 90%;
+  padding: 30px 35px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  animation: scaleIn 0.3s ease;
+}
+
+.confirm-icon svg {
+  margin-bottom: 10px;
+}
+
+.confirm-title {
+  font-size: 24px;
+  font-weight: 900;
+  color: #E0E0E0;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin: 0;
+}
+
+.confirm-text {
+  color: #A0A0A0;
+  font-size: 16px;
+  line-height: 1.6;
+  margin: 0;
+}
+
+/* Container for the buttons */
+.confirm-actions {
+  display: flex;
+  justify-content: center;
+  gap: 15px;
+  margin-top: 15px;
+}
+
+/* Generic button styles from the theme */
+.action-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  border-radius: 5px;
+  padding: 12px 24px;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  height: 44px;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+}
+
+/* New button styles for the modal */
+.neutral-btn {
+  background: #444;
+  color: #E0E0E0;
+}
+.neutral-btn:hover {
+  background: #555;
+}
+
+.destructive-btn {
+  background: #B83B5E; /* Muted, deep red for destructive actions */
+  color: white;
+}
+.destructive-btn:hover {
+  background: #a13251;
+  box-shadow: 0 0 15px rgba(184, 59, 94, 0.5); /* Red glow */
+}
+
+/* Animations */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+@keyframes scaleIn {
+  from { transform: scale(0.95); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
