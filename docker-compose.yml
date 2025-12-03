@@ -9,6 +9,8 @@ services:
     build: ./server
     ports:
       - "3000:3000"
+    environment:
+      - DB_HOST=shop-db
     depends_on:
       shop-db:
         condition: service_healthy
