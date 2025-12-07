@@ -3,7 +3,7 @@ import "./SellerCenter.css"; // We will create this next
 const API_URL = import.meta.env.VITE_BACKEND_URL;
 import ProductGrid from "../Home/ProductGrid.jsx";
 import TickingSuccess from "../Notifications/TickingSuccess.jsx";
-const CreateProductForm = ({ onClose, setProducts }) => {
+const CreateProductForm = ({ onClose }) => {
   const [productData, setProductData] = useState({
     sellerId: localStorage.getItem('idUser'),
     name: "",
@@ -15,8 +15,10 @@ const CreateProductForm = ({ onClose, setProducts }) => {
     imageURL: ""
   });
   const [showSuccess, setShowSuccess] = useState(false);
+  const [invalidSubmit, setInvalidSubmit] = useState(false);
   const handleChange = (e) => {
     setProductData({ ...productData, [e.target.name]: e.target.value });
+    setInvalidSubmit(false);
   };
 
   const handleSubmit = async (e) => {
@@ -30,13 +32,15 @@ const CreateProductForm = ({ onClose, setProducts }) => {
       if (response.ok) {
         const data = await response.json();
         console.log("Product created:", data);
-        setProducts(prevProducts => [...prevProducts, data.product]);
         setShowSuccess(true);
         setTimeout(() => {
           setShowSuccess(false);
-          onClose();
+          window.location.reload();
         }, 2000);
-
+      }
+      else {
+        const errorData = await response.json();
+        setInvalidSubmit(errorData.error || "Failed to create product");
       }
     } catch (error) {
       console.error("Failed to create product:", error);
@@ -128,6 +132,9 @@ const CreateProductForm = ({ onClose, setProducts }) => {
           />
           <button type="submit" className="primary-btn">Create Product</button>
         </div>
+        {invalidSubmit && <div className="error-message" style={{
+          color: "red"
+        }}>{invalidSubmit}</div>}
       </form>
     </div>
   )
