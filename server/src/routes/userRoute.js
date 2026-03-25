@@ -11,6 +11,7 @@ import {
   updateUserInfo,
   sellerRegisterById,
   isSeller,
+  sendRegistrationOTP
 } from "../controllers/userController.js";
 const userRoute = express.Router();
 
@@ -23,6 +24,7 @@ userRoute.get('/user/:id', getUserInfo);
 userRoute.put('/user/:id', updateUserInfo);
 userRoute.get('/user/role/:id', isSeller);
 userRoute.post('/auth/register/customer', customerRegister);
+userRoute.post('/auth/register/otp', sendRegistrationOTP);
 // login customer
 userRoute.post("/auth/login/customer", customerLogin);
 userRoute.post("/auth/forgot-password", forgotPassword);

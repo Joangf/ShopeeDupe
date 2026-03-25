@@ -1,9 +1,16 @@
 import pool from "../config/database.js";
 import nodemailer from "nodemailer";
 import bcrypt from "bcryptjs";
-// // Config JWT and twilio
+import jwt from "jsonwebtoken";
 const JWT_SECRET = process.env.JWT_SECRET || "shopeedupe";
-
+const transporter = nodemailer.createTransport({
+  service: "gmail",
+  auth: {
+    user: process.env.EMAIL_USER,
+    pass: process.env.EMAIL_PASS,
+  },
+});
+const otpStore = new Map();
 // ==============================================================================
 // Customer
 // ==============================================================================
@@ -100,11 +107,24 @@ export const customerLogin = async (req, res) => {
     const out = outRows[0];
 
     if (out.success != 1) {
-      return res
-        .status(401)
-        .json({ error: out.reason || "Invalid email or password" });
+      return res.status(401).json({ error: out.reason || "Invalid email or password" });
     }
+
     const [userInfo] = await pool.query('SELECT FullName FROM User WHERE UserID = ?', [out.returnedUserID]);
+
+    const token = jwt.sign(
+      { userId: out.returnedUserID, role: "customer" },
+      JWT_SECRET,
+      { expiresIn: "1d" }
+    );
+
+    res.cookie("token", token, {
+      httpOnly: true,     // Protects against XSS
+      secure: true,       // Use true in production (HTTPS)
+      sameSite: "Strict", // Protects against CSRF
+      maxAge: 86400000    // 1 day in milliseconds
+    });
+
     return res.status(200).json({
       message: "Login successful",
       userId: out.returnedUserID,
@@ -116,47 +136,80 @@ export const customerLogin = async (req, res) => {
   }
 };
 
+// OTP for registration
+export const sendRegistrationOTP = async (req, res) => {
+  const { email, fullName } = req.body;
+
+  if (!email) {
+    return res.status(400).json({ error: "Email is required to send OTP" });
+  }
+
+  try {
+    // 1. Generate a 6-digit OTP
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+
+    // 2. Store it with an expiration time (e.g., 10 minutes)
+    const expiresAt = Date.now() + 10 * 60 * 1000;
+    otpStore.set(email, { otp, expiresAt });
+
+    // 3. Send the email
+    const mailOptions = {
+      from: `"Shopee" <${process.env.EMAIL_USER}>`,
+      to: email,
+      subject: "Your Registration Verification Code",
+      text: `Hello ${fullName || "User"},\n\nYour verification code is: ${otp}\nThis code will expire in 10 minutes.`,
+    };
+
+    await transporter.sendMail(mailOptions);
+
+    res.status(200).json({ message: "OTP sent successfully to your email." });
+  } catch (error) {
+    console.error("Error sending OTP:", error);
+    res.status(500).json({ error: "Failed to send OTP" });
+  }
+};
 // Customer Register
 export const customerRegister = async (req, res) => {
   const {
-    fullName,
-    gender,
-    dateOfBirth,
-    nationalId,
-    email,
-    phoneNumber,
-    address,
-    password,
+    fullName, gender, dateOfBirth, nationalId,
+    email, phoneNumber, address, password, otp
   } = req.body;
 
-  // Validate required fields
-  if (!fullName || !email || !password) {
-    return res.status(400).json({ error: "Missing required fields" });
+  // Validate required fields (including OTP)
+  if (!fullName || !email || !password || !otp) {
+    return res.status(400).json({ error: "Missing required fields or OTP" });
   }
+
+  // Validate OTP
+  const record = otpStore.get(email);
+  if (!record) {
+    return res.status(400).json({ error: "No OTP requested for this email" });
+  }
+  if (record.otp !== otp) {
+    return res.status(400).json({ error: "Invalid OTP" });
+  }
+  if (Date.now() > record.expiresAt) {
+    otpStore.delete(email); // Clean up expired OTP
+    return res.status(400).json({ error: "OTP has expired. Please request a new one." });
+  }
+
   const sql = "CALL sp_AddNewCustomer(?, ?, ?, ?, ?, ?, ?, ?)";
 
   try {
-    const [row] = await pool.query(sql, [
-      fullName,
-      gender,
-      dateOfBirth,
-      nationalId,
-      email,
-      phoneNumber,
-      address,
-      password,
+    await pool.query(sql, [
+      fullName, gender, dateOfBirth, nationalId,
+      email, phoneNumber, address, password,
     ]);
-    return res.status(200).json({
-      message: "User created successfully"
-    });
+
+    otpStore.delete(email);
+
+    return res.status(200).json({ message: "User created successfully" });
   } catch (err) {
     if (err.code === "ER_DUP_ENTRY") {
       let field = "";
-
       if (err.sqlMessage.includes("ux_user_email")) field = "Email";
       else if (err.sqlMessage.includes("ux_user_phone")) field = "Phone number";
-      else if (err.sqlMessage.includes("ux_user_nationalid"))
-        field = "National ID";
+      else if (err.sqlMessage.includes("ux_user_nationalid")) field = "National ID";
 
       return res.status(400).json({ error: `${field} already exists` });
     }
@@ -247,7 +300,7 @@ export const sellerRegister = async (req, res) => {
         businessName,
       ]
     );
-    res.status(200).json({ message: "Seller created successfully"});
+    res.status(200).json({ message: "Seller created successfully" });
   } catch (error) {
     if (error.code === "ER_DUP_ENTRY") {
       let field = "";
@@ -317,9 +370,8 @@ export const forgotPassword = async (req, res) => {
       from: `"Shopee" <${process.env.EMAIL_USER}>`,
       to: email,
       subject: "Your new password",
-      text: `Hello ${
-        customer.FullName || "Customer"
-      },\n\nYour password has been reset. Your new password is: ${newPassword}\n\nPlease login and change it immediately.`,
+      text: `Hello ${customer.FullName || "Customer"
+        },\n\nYour password has been reset. Your new password is: ${newPassword}\n\nPlease login and change it immediately.`,
     };
 
     await transporter.sendMail(mailOptions);

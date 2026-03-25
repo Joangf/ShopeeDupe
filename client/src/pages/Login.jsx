@@ -71,16 +71,17 @@ const handleSubmit = async (e) => {
   };
 
   if (activeTab === "register") {
-    const { confirmPassword, otp, ...registerData } = formData;
+    const registerData = {
+      email: formData.email,
+      fullName: formData.fullName
+    };
     if (formData.password != formData.confirmPassword){
       return;
     }
     console.log("Register attempt:", registerData);
 
-    await doRequest("/auth/register/customer", registerData, () => {
-      setSubmitDone(true);  
-      setTimeout(() => setSubmitDone(false), 2000);
-      setActiveTab("login");
+    await doRequest("/auth/register/otp", registerData, () => {
+      setActiveTab("otp");
     });
 
   } else if (activeTab === "login") {
@@ -105,12 +106,10 @@ const handleSubmit = async (e) => {
     });
 
   } else if (activeTab === "otp") {
-    const { email, otp } = formData;
-    const otpData = { email, otp };
-    console.log("OTP attempt:", otpData);
+    const { confirmPassword, ...registerData } = formData;
 
-    await doRequest("/verify/email", otpData, () => {
-      setSubmitDone(true);  
+    await doRequest("/auth/register/customer", registerData, () => {
+      setSubmitDone(true);
       setTimeout(() => setSubmitDone(false), 2000);
       setActiveTab("login");
     });

@@ -1,4 +1,5 @@
 import express from 'express';
+import authenticationToken from '../middleware/authUser.js';
 
 import {
   addToCart,
@@ -9,10 +10,10 @@ import {
 
 const cartRoute = express.Router();
 
-cartRoute.post('/cart/add', addToCart);
+cartRoute.post('/cart/add', authenticationToken, addToCart);
 
-cartRoute.put('/cart/update', updateCartItem);
-cartRoute.delete('/cart/remove', removeFromCart);
-cartRoute.get('/cart/:userId', getCartItems);
+cartRoute.put('/cart/update', authenticationToken, updateCartItem);
+cartRoute.delete('/cart/remove', authenticationToken, removeFromCart);
+cartRoute.get('/cart/:userId', authenticationToken, getCartItems);
 
 export default cartRoute;

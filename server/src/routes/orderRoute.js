@@ -1,5 +1,5 @@
 import express from 'express';
-
+import authenticationToken from '../middleware/authUser.js';
 import {
   createOrder,
   getOrdersByUser,
@@ -9,8 +9,8 @@ import {
 
 const orderRoute = express.Router();
 
-orderRoute.post('/order/create', createOrder);
-orderRoute.get('/order/user/:userId', getOrdersByUser);
-orderRoute.get('/order/details/:orderId', getOrderDetails);
-orderRoute.put('/order/payment', updateOrderPayment);
+orderRoute.post('/order/create', authenticationToken, createOrder);
+orderRoute.get('/order/user/:userId', authenticationToken, getOrdersByUser);
+orderRoute.get('/order/details/:orderId', authenticationToken, getOrderDetails);
+orderRoute.put('/order/payment', authenticationToken, updateOrderPayment);
 export default orderRoute;
